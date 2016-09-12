@@ -1,6 +1,6 @@
 {
   "name": "operator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/operator.js",
   "scripts": {
@@ -23,8 +23,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/estrattonbailey/operator.js.git"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "estrattonbailey",
   "license": "MIT",
   "bugs": {
