@@ -1,10 +1,12 @@
 {
-  "name": "to-from",
+  "name": "operator",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/to-from.js",
+  "main": "dist/operator.js",
   "scripts": {
-    "package": "mkdir browser ; browserify index.js --standalone to-from > browser/to-from.js"
+    "build": "mkdir -p dist && browserify index.js --standalone operator > dist/operator.js",
+    "size": "bundle-size ./dist/operator.js",
+    "test": "ava test -v"
   },
   "browserify": {
     "debug": true,
@@ -14,48 +16,39 @@
       "js"
     ],
     "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015",
-            "react"
-          ]
-        }
-      ]
+      "babelify"
     ]
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/estrattonbailey/to-from.git"
+    "url": "git+ssh://git@github.com/estrattonbailey/operator.git"
   },
   "keywords": [
-    "scroll",
-    "waypoint",
-    "resize",
-    "sticky",
-    "element queries"
   ],
   "author": "estrattonbailey",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/estrattonbailey/to-from/issues"
+    "url": "https://github.com/estrattonbailey/operator/issues"
   },
-  "homepage": "https://github.com/estrattonbailey/to-from#readme",
+  "homepage": "https://github.com/estrattonbailey/operator#readme",
   "devDependencies": {
+    "ava": "^0.16.0",
+    "babel-cli": "^6.14.0",
     "babel-preset-es2015": "^6.9.0",
-    "babel-preset-react": "^6.5.0",
+    "babel-register": "^6.9.0",
+    "bundle-size": "^0.7.0",
+    "jsdom": "^9.4.1",
+    "jsdom-global": "^2.0.0",
+    "query-string": "^4.2.3",
     "babelify": "^7.3.0",
     "browserify": "^13.0.1",
     "minifyify": "^7.3.3",
     "watchify": "^3.7.0"
   },
   "dependencies": {
-    "closest": "0.0.1",
     "delegate": "^3.0.1",
     "knot.js": "^1.1.1",
     "nanoajax": "^0.4.3",
-    "navigo": "^2.2.0",
-    "run-series": "^1.1.4"
+    "navigo": "^2.2.0"
   }
 }

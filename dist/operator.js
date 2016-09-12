@@ -1,9 +1,11 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.toFrom = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.operator = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _knot = require('knot.js');
 
@@ -13,67 +15,6 @@ var _delegate = require('delegate');
 
 var _delegate2 = _interopRequireDefault(_delegate);
 
-var _router = require('./lib/router');
-
-var _router2 = _interopRequireDefault(_router);
-
-var _util = require('./lib/util');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = function () {
-  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-  var config = (0, _util.merge)({
-    root: 'root',
-    duration: 0
-  }, options);
-
-  var state = {
-    path: '',
-    title: ''
-  };
-
-  var instance = Object.create({
-    router: (0, _router2.default)(config),
-    events: (0, _knot2.default)()
-  }, {
-    getState: {
-      value: function value() {
-        return state;
-      }
-    }
-  });
-
-  (0, _delegate2.default)(document.body, 'a', 'click', function (e) {
-    var path = (0, _util.validate)(e);
-
-    if (!path) return;
-
-    instance.router.go(_util.origin + '/' + path);
-  });
-
-  /**
-   * Get previous page, don't push
-   * history.state
-   */
-  window.onpopstate = function (e) {
-    var path = e.target.location.href;
-
-    instance.router.go(path);
-  };
-
-  return instance;
-};
-
-},{"./lib/router":2,"./lib/util":3,"delegate":5,"knot.js":6}],2:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.render = undefined;
-
 var _nanoajax = require('nanoajax');
 
 var _nanoajax2 = _interopRequireDefault(_nanoajax);
@@ -82,142 +23,103 @@ var _navigo = require('navigo');
 
 var _navigo2 = _interopRequireDefault(_navigo);
 
-var _runSeries = require('run-series');
+var _dom = require('./lib/dom');
 
-var _runSeries2 = _interopRequireDefault(_runSeries);
+var _dom2 = _interopRequireDefault(_dom);
 
-var _util = require('./util');
+var _util = require('./lib/util');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Helper to smoothly swap old 
- * markup with new markup
- * 
- * @param {object} markup New node to append to DOM
- */
-var render = exports.render = function render(root, duration) {
-  return function (markup, cb) {
-    var dom = (0, _util.parseResponse)(markup);
-    var title = dom.head.getElementsByTagName('title')[0].innerHTML;
-    var main = document.getElementById(root);
-
-    // Transition class
-    document.documentElement.classList.add('is-transitioning');
-
-    // Fix height
-    main.style.height = (0, _util.returnSize)(main, 'Height') + 'px';
-
-    (0, _runSeries2.default)([setTimeout(function () {
-      console.log('One');
-    }, 2000), setTimeout(function () {
-      console.log('Two');
-    }, 2000)]);
-
-    setTimeout(function () {
-      main.innerHTML = dom.getElementById(root).innerHTML;
-
-      setTimeout(function () {
-        /**
-         * Run callback: updating routes, etc
-         */
-        cb(title, main);
-
-        /**
-         * Fire any script tags that are
-         * now in the new DOM
-         */
-        (0, _util.evalScripts)(main);
-
-        (0, _util.restoreScrollPos)();
-      }, 0);
-
-      setTimeout(function () {
-        document.documentElement.classList.remove('is-transitioning');
-
-        main.style.height = '';
-
-        setTimeout(function () {
-          // events.publish('pageTransitionEnd')
-        }, duration);
-      }, duration);
-    }, duration);
-  };
+var state = {
+  path: window.location.pathname,
+  title: document.title
 };
 
-/**
- * Main AJAX request handler
- *
- * @param {string} path URL to fetch
- * @param {object} data Data to pass to ajax
- * @param {funciton} cb Callback function
- */
-function get(path, cb) {
-  var _this = this;
+var router = new _navigo2.default(_util.origin);
 
-  return _nanoajax2.default.ajax({
-    method: 'GET',
-    url: path
-  }, function (status, response, request) {
-    var success = status >= 200 && status <= 300 ? true : false;
-    success ? _this.render(response, cb) : console.log('AJAX error:', response);
-  });
-}
+var valid = function valid(e) {
+  return tests.filter(function (t) {
+    return true;
+  }).length > 0 ? false : true;
+};
 
-function go(path) {
-  var _this2 = this;
+exports.default = function () {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-  var cb = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+  var root = options.root || document.body;
+  var duration = options.duration || 0;
 
-  var to = (0, _util.scrubPath)(path);
+  var events = (0, _knot2.default)();
+  var render = (0, _dom2.default)(root, duration, events);
 
-  (0, _util.saveScrollPosition)();
-
-  this.get(_util.origin + '/' + to, function (title, res) {
-    try {
-      _this2._router.navigate(to);
-      _this2._router.resolve(to);
-      document.title = title;
-
-      cb(res, to);
-    } catch (e) {
-      console.log('Router failure:', e);
+  var instance = Object.create(_extends({}, events, {
+    go: go
+  }), {
+    getState: {
+      value: function value() {
+        return state;
+      }
     }
   });
-}
 
-exports.default = function (config) {
-  return {
-    _router: new _navigo2.default(_util.origin),
-    render: render(config.root, config.duration),
-    get: get,
-    go: go
+  (0, _delegate2.default)(document, 'a', 'click', function (e) {
+    var a = e.delegateTarget;
+    var href = a.getAttribute('href') || '/';
+
+    if (!_util.link.isSameOrigin(href) || _util.link.isHash(href) || _util.link.isSameURL(href) || a.getAttribute('rel') === 'external') {
+      return;
+    }
+
+    e.preventDefault();
+
+    go(_util.origin + '/' + (0, _util.sanitize)(href));
+  });
+
+  window.onpopstate = function (e) {
+    go(e.target.location.href);
   };
+
+  return instance;
+
+  function get(path, cb) {
+    return _nanoajax2.default.ajax({
+      method: 'GET',
+      url: path
+    }, function (status, res, req) {
+      if (req.status < 200 || req.status > 300 && req.status !== 304) {
+        return window.location.reload();
+      }
+      render(req.response, cb);
+    });
+  }
+
+  function go(path) {
+    var cb = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+
+    var to = (0, _util.sanitize)(path);
+
+    (0, _util.saveScrollPosition)();
+
+    var req = get(_util.origin + '/' + to, function (title, root) {
+      router.navigate(to);
+      router.resolve(to);
+      document.title = title;
+      state.title = title;
+      state.path = to;
+      cb(to, root);
+    });
+  }
 };
 
-},{"./util":3,"nanoajax":8,"navigo":9,"run-series":11}],3:[function(require,module,exports){
+},{"./lib/dom":2,"./lib/util":3,"delegate":5,"knot.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.restoreScrollPos = exports.saveScrollPosition = exports.returnSize = exports.evalScripts = exports.validate = exports.isValid = exports.isExternal = exports.scrubPath = exports.merge = exports.parseResponse = exports.originRegEx = exports.origin = undefined;
 
-var _closest = require('closest');
-
-var _closest2 = _interopRequireDefault(_closest);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/**
- * Standardize base URL
- */
-var origin = exports.origin = window.location.origin || window.location.protocol + '//' + window.location.host;
-
-/**
- * Create regex to test links
- */
-var originRegEx = exports.originRegEx = new RegExp(origin);
+var _util = require('./util');
 
 /**
  * Init new native parser
@@ -229,198 +131,8 @@ var parser = new DOMParser();
  * @param {string} html Stringified HTML
  * @return {object} DOM node, #page
  */
-var parseResponse = exports.parseResponse = function parseResponse(html) {
+var parseResponse = function parseResponse(html) {
   return parser.parseFromString(html, "text/html");
-};
-
-/**
- * Merge two objects into a 
- * new object
- *
- * @param {object} target Root object
- * @param {object} source Object to merge 
- *
- * @return {object} A *new* object with all props of the passed objects
- */
-var merge = exports.merge = function merge(target) {
-  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    args[_key - 1] = arguments[_key];
-  }
-
-  for (var i = 0; i < args.length; i++) {
-    var source = args[i];
-    for (var key in source) {
-      if (source[key]) target[key] = source[key];
-    }
-  }
-
-  return target;
-};
-
-/**
- * Replace site origin, if present,
- * remove leading slash, if present.
- *
- * @param {string} url Raw URL to parse
- * @return {string} URL sans origin and sans leading comma
- */
-var scrubPath = exports.scrubPath = function scrubPath(url) {
-  var path = url.replace(originRegEx, '');
-  var clean = path.match(/^\//) ? path.replace(/\/{1}/, '') : path; // remove /
-  return clean === '' ? '/' : clean;
-};
-
-/**
- * HREF scrubber functions
- *
- * @param {string} href The href attr value for the link clicked
- * @return {boolean}
- */
-var link = {
-  hasFullProtocol: function hasFullProtocol(href) {
-    return href.match(/^(http\:\/\/)|^w{3}|^\#/) ? true : false;
-  },
-  isAnchor: function isAnchor(href) {
-    return href.match(/^\#/) ? true : false;
-  },
-  isLocalPath: function isLocalPath(href) {
-    return href.match(/^(\/\w+|\w+|\/)/) ? true : false;
-  },
-  isSameDomain: function isSameDomain(href) {
-    return href.match(originRegEx) ? true : false;
-  },
-  isSamePage: function isSamePage(href) {
-    var cleanHREF = scrubPath(href);
-    var cleanPath = scrubPath(window.location.pathname);
-    var pathMatch = href.match(new RegExp(window.location.pathname)) ? true : false;
-
-    var samePath = pathMatch && cleanHREF === cleanPath ? true : false;
-
-    return samePath;
-  },
-  isHomepage: function isHomepage(href) {
-    return href.match(/^\/$/) ? true : false;
-  },
-  isLogout: function isLogout(href) {
-    return href.match(/account\/logout/) ? true : false;
-  }
-};
-
-/**
- * Check the event for an external
- * link. Return true if external, which
- * will return from the handler and NOT
- * preventDefault(), allowing the click to fire
- *
- * @param {object} anchor The link clicked on
- * @return {boolean} 
- */
-var isExternal = exports.isExternal = function isExternal(anchor) {
-  var href = anchor.getAttribute('href') || '';
-  var rel = anchor.getAttribute('rel') || false;
-  var target = anchor.getAttribute('target') || false;
-
-  /**
-   * If rel="external", 
-   * if target="_blank"
-   * if already bound
-   */
-  if (rel === 'external' || target) {
-    return true;
-  }
-
-  /** 
-   * Coming from the same domain 
-   */
-  if (!link.isAnchor(href) && !link.isLocalPath(href) && !link.isSameDomain(href)) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
- * Check if click is triggered for a valid
- * internal route, or other handler, like anchors
- *
- * @param {object} anchor The link clicked on
- * @return {boolean} Whether or not it's a valid route
- */
-var isValid = exports.isValid = function isValid(href) {
-  var isCurrentlyHomepage = window.location.pathname.match(/^\/$/) ? true : false;
-
-  /**
-   * If it's we're on the homepage,
-   * clicking on a '/' link
-   */
-  if (link.isHomepage(href) && isCurrentlyHomepage) {
-    return false;
-  }
-
-  /**
-   * If it's a link to the current page,
-   * unless we're on the homepage (which
-   * normally matches everything because
-   * the pathname === '/'. Homepage case
-   * is above ^^.
-   */
-  if (link.isSamePage(href) && !isCurrentlyHomepage) {
-    return false;
-  }
-
-  /** 
-   * Coming from the same domain 
-   */
-  if (link.isSameDomain(href)) {
-    return true;
-  }
-
-  /**
-   * Ignore all full URLs and page anchors
-   */
-  if (link.hasFullProtocol(href)) {
-    return false;
-  }
-
-  /**
-   * Any other matches, i.e:
-   *
-   * /pages/page
-   * pages/page
-   */
-  if (link.isLocalPath(href)) {
-    return true;
-  }
-
-  return false;
-};
-
-var validate = exports.validate = function validate(e) {
-  var anchor = (0, _closest2.default)(e.target, 'a', true);
-  var href = anchor.getAttribute('href') || '/';
-
-  /**
-   * If this like was external,
-   * exit and let it fire normally
-   */
-  if (isExternal(anchor)) return null;
-
-  /**
-   * If all these checks pass, prevent default
-   */
-  e.preventDefault();
-
-  /**
-   * Check for any other handlers
-   * we've bound. If it's valid, pass
-   * the event on to the router
-   */
-  if (!isValid(href)) return null;
-
-  /**
-   * We have a valid route!
-   */
-  return scrubPath(anchor.getAttribute('href') || '');
 };
 
 /**
@@ -432,7 +144,7 @@ var validate = exports.validate = function validate(e) {
  *
  * @param {object} context DOM node containing new markup via AJAX
  */
-var evalScripts = exports.evalScripts = function evalScripts(context) {
+var evalScripts = function evalScripts(context) {
   var tags = context.getElementsByTagName('script');
 
   for (var i = 0; i < tags.length; i++) {
@@ -450,7 +162,7 @@ var evalScripts = exports.evalScripts = function evalScripts(context) {
  * @param {object} el Element or window
  * @param {string} type 'Height' or 'Width
  */
-var returnSize = exports.returnSize = function returnSize(el, type) {
+var returnSize = function returnSize(el, type) {
   var isWindow = el !== null && el.window ? true : false;
 
   if (isWindow) {
@@ -458,6 +170,108 @@ var returnSize = exports.returnSize = function returnSize(el, type) {
   }
 
   return Math.max(el['offset' + type], el['client' + type]);
+};
+
+/**
+ * Helper to smoothly swap old 
+ * markup with new markup
+ * 
+ * @param {object} markup New node to append to DOM
+ */
+
+exports.default = function (root, duration, events) {
+  return function (markup, cb) {
+    var dom = parseResponse(markup);
+    var title = dom.head.getElementsByTagName('title')[0].innerHTML;
+    var main = document.getElementById(root);
+
+    document.documentElement.classList.add('is-transitioning');
+
+    events.emit('pageTransitionStart');
+
+    // Fix height
+    main.style.height = returnSize(main, 'Height') + 'px';
+
+    setTimeout(function () {
+      main.innerHTML = dom.getElementById(root).innerHTML;
+
+      setTimeout(function () {
+        /**
+         * Run callback: updating routes, etc
+         */
+        cb(title, main);
+
+        /**
+         * Fire any script tags that are
+         * now in the new DOM
+         */
+        evalScripts(main);
+
+        (0, _util.restoreScrollPos)();
+      }, 0);
+
+      setTimeout(function () {
+        document.documentElement.classList.remove('is-transitioning');
+
+        main.style.height = '';
+
+        setTimeout(function () {
+          events.emit('pageTransitionEnd', title);
+        }, duration);
+      }, duration);
+    }, duration);
+  };
+};
+
+},{"./util":3}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var getOrigin = function getOrigin(url) {
+  return url.origin || url.protocol + '//' + url.host;
+};
+
+/**
+ * Standardize base URL
+ */
+var origin = exports.origin = getOrigin(window.location);
+
+/**
+ * Create regex to test links
+ */
+var originRegEx = exports.originRegEx = new RegExp(origin);
+
+/**
+ * Replace site origin, if present,
+ * remove leading slash, if present.
+ *
+ * @param {string} url Raw URL to parse
+ * @return {string} URL sans origin and sans leading comma
+ */
+var sanitize = exports.sanitize = function sanitize(url) {
+  var path = url.replace(originRegEx, '');
+  var clean = path.match(/^\//) ? path.replace(/\/{1}/, '') : path; // remove /
+  return clean === '' ? '/' : clean;
+};
+
+var parseURL = exports.parseURL = function parseURL(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a;
+};
+
+var link = exports.link = {
+  isSameOrigin: function isSameOrigin(href) {
+    return origin === getOrigin(parseURL(href));
+  },
+  isHash: function isHash(href) {
+    return href.match(/^\#/) ? true : false;
+  },
+  isSameURL: function isSameURL(href) {
+    return window.location.pathname === parseURL(href).pathname;
+  }
 };
 
 /**
@@ -484,7 +298,7 @@ var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
   }
 };
 
-},{"closest":4}],4:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var matches = require('matches-selector')
 
 module.exports = function (element, selector, checkYoSelf) {
@@ -1032,154 +846,5 @@ return /******/ (function(modules) { // webpackBootstrap
 });
 ;
 
-},{}],10:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-(function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
-    }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
-    }
-  }
-} ())
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    cachedClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],11:[function(require,module,exports){
-(function (process){
-module.exports = function (tasks, cb) {
-  var current = 0
-  var results = []
-  var isSync = true
-
-  function done (err) {
-    function end () {
-      if (cb) cb(err, results)
-    }
-    if (isSync) process.nextTick(end)
-    else end()
-  }
-
-  function each (err, result) {
-    results.push(result)
-    if (++current >= tasks.length || err) done(err)
-    else tasks[current](each)
-  }
-
-  if (tasks.length > 0) tasks[0](each)
-  else done(null)
-
-  isSync = false
-}
-
-}).call(this,require('_process'))
-},{"_process":10}]},{},[1])(1)
+},{}]},{},[1])(1)
 });

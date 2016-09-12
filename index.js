@@ -1,50 +1,86 @@
 import knot from 'knot.js'
 import delegate from 'delegate'
-import router from './lib/router'
+import nanoajax from 'nanoajax'
+import navigo from 'navigo'
+import dom from './lib/dom'
 import { 
   origin, 
-  validate,
-  merge, 
-  saveScrollPosition
+  sanitize,
+  saveScrollPosition, 
+  link
 } from './lib/util'
 
-export default (options = {}) => {
-  const config = merge({
-    root: 'root',
-    duration: 0
-  }, options)
+const state = {
+  path: window.location.pathname,
+  title: document.title 
+}
 
-  const state = {
-    path: '',
-    title: ''
-  }
+const router = new navigo(origin)
+
+const valid = e => tests.filter(t => true).length > 0 ? false : true
+
+export default (options = {}) => {
+  const root = options.root || document.body
+  const duration = options.duration || 0
+
+  const events = knot()
+  const render = dom(root, duration, events)
 
   const instance = Object.create({
-    router: router(config),
-    events: knot()
+    ...events,
+    go
   }, {
     getState: {
       value: () => state
     }
   })
 
-  delegate(document.body, 'a', 'click', (e) => {
-    let path = validate(e)
+  delegate(document, 'a', 'click', (e) => {
+    let a = e.delegateTarget
+    let href = a.getAttribute('href') || '/'
 
-    if (!path) return
+    if (
+      !link.isSameOrigin(href)
+      || link.isHash(href)
+      || link.isSameURL(href)
+      || a.getAttribute('rel') === 'external'
+    ){ return }
 
-    instance.router.go(`${origin}/${path}`)
+    e.preventDefault()
+
+    go(`${origin}/${sanitize(href)}`)
   })
 
-  /**
-   * Get previous page, don't push
-   * history.state
-   */
-  window.onpopstate = (e) => {
-    let path = e.target.location.href
-
-    instance.router.go(path)
+  window.onpopstate = e => {
+    go(e.target.location.href)
   }
 
   return instance
+
+  function get(path, cb){
+    return nanoajax.ajax({ 
+      method: 'GET', 
+      url: path 
+    }, (status, res, req) => {
+      if (req.status < 200 || req.status > 300 && req.status !== 304){
+        return window.location.reload()
+      }
+      render(req.response, cb) 
+    })
+  }
+
+  function go(path, cb = () => {}){
+    let to = sanitize(path)
+
+    saveScrollPosition()
+
+    let req = get(`${origin}/${to}`, (title, root) => {
+      router.navigate(to)
+      router.resolve(to)
+      document.title = title
+      state.title = title
+      state.path = to
+      cb(to, root)
+    })
+  }
 }
