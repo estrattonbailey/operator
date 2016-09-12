@@ -1,5 +1,5 @@
 {
-  "name": "operator",
+  "name": "operator.js",
   "version": "0.0.1",
   "description": "",
   "main": "dist/operator.js",
