@@ -2,26 +2,45 @@ import knot from 'knot.js'
 import delegate from 'delegate'
 import nanoajax from 'nanoajax'
 import navigo from 'navigo'
-import dom from './lib/dom'
+import dom from './lib/dom.js'
 import { 
   origin, 
   sanitize,
   saveScrollPosition, 
   link
-} from './lib/util'
-
-const state = {
-  path: window.location.pathname,
-  title: document.title 
-}
+} from './lib/util.js'
 
 const router = new navigo(origin)
 
-const valid = e => tests.filter(t => true).length > 0 ? false : true
+const state = {
+  _state: {
+    path: window.location.pathname,
+    title: document.title 
+  },
+  get path(){
+    return this._state.path
+  },
+  set path(loc){
+    this._state.path = loc
+    router.navigate(loc)
+    router.resolve(loc)
+  },
+  get title(){
+    return this._state.title
+  },
+  set title(val){
+    document.title = val
+  }
+}
+
+const matches = (path, tests) => (
+  tests.filter(t => t(path)).length > 0 ? true : false 
+)
 
 export default (options = {}) => {
   const root = options.root || document.body
   const duration = options.duration || 0
+  const ignore = options.ignore || []
 
   const events = knot()
   const render = dom(root, duration, events)
@@ -31,24 +50,34 @@ export default (options = {}) => {
     go
   }, {
     getState: {
-      value: () => state
+      value: () => state._state
     }
   })
 
   delegate(document, 'a', 'click', (e) => {
     let a = e.delegateTarget
     let href = a.getAttribute('href') || '/'
+    let path = sanitize(href)
 
     if (
       !link.isSameOrigin(href)
-      || link.isHash(href)
-      || link.isSameURL(href)
       || a.getAttribute('rel') === 'external'
+      || matches(path, ignore)
     ){ return }
 
     e.preventDefault()
 
-    go(`${origin}/${sanitize(href)}`)
+    if (link.isHash(href)){ 
+      events.emit('hash', href)
+      state.path = `${state.path}/${href}` 
+      return
+    }
+
+    if (
+      link.isSameURL(href)
+    ){ return }
+
+    go(`${origin}/${path}`)
   })
 
   window.onpopstate = e => {
@@ -74,13 +103,15 @@ export default (options = {}) => {
 
     saveScrollPosition()
 
+    events.emit('before:route', {path: to})
+
     let req = get(`${origin}/${to}`, (title, root) => {
-      router.navigate(to)
-      router.resolve(to)
-      document.title = title
+      events.emit('after:route', {path: to, title, root})
+
       state.title = title
       state.path = to
-      cb(to, root)
+
+      cb(to, title, root)
     })
   }
 }
