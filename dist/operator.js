@@ -23,25 +23,41 @@ var _navigo = require('navigo');
 
 var _navigo2 = _interopRequireDefault(_navigo);
 
-var _dom = require('./lib/dom');
+var _dom = require('./lib/dom.js');
 
 var _dom2 = _interopRequireDefault(_dom);
 
-var _util = require('./lib/util');
+var _util = require('./lib/util.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var state = {
-  path: window.location.pathname,
-  title: document.title
-};
-
 var router = new _navigo2.default(_util.origin);
 
-var valid = function valid(e) {
+var state = {
+  _state: {
+    path: window.location.pathname,
+    title: document.title
+  },
+  get path() {
+    return this._state.path;
+  },
+  set path(loc) {
+    this._state.path = loc;
+    router.navigate(loc);
+    router.resolve(loc);
+  },
+  get title() {
+    return this._state.title;
+  },
+  set title(val) {
+    document.title = val;
+  }
+};
+
+var matches = function matches(path, tests) {
   return tests.filter(function (t) {
-    return true;
-  }).length > 0 ? false : true;
+    return t(path);
+  }).length > 0 ? true : false;
 };
 
 exports.default = function () {
@@ -49,6 +65,7 @@ exports.default = function () {
 
   var root = options.root || document.body;
   var duration = options.duration || 0;
+  var ignore = options.ignore || [];
 
   var events = (0, _knot2.default)();
   var render = (0, _dom2.default)(root, duration, events);
@@ -58,7 +75,7 @@ exports.default = function () {
   }), {
     getState: {
       value: function value() {
-        return state;
+        return state._state;
       }
     }
   });
@@ -66,14 +83,25 @@ exports.default = function () {
   (0, _delegate2.default)(document, 'a', 'click', function (e) {
     var a = e.delegateTarget;
     var href = a.getAttribute('href') || '/';
+    var path = (0, _util.sanitize)(href);
 
-    if (!_util.link.isSameOrigin(href) || _util.link.isHash(href) || _util.link.isSameURL(href) || a.getAttribute('rel') === 'external') {
+    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(path, ignore)) {
       return;
     }
 
     e.preventDefault();
 
-    go(_util.origin + '/' + (0, _util.sanitize)(href));
+    if (_util.link.isHash(href)) {
+      events.emit('hash', href);
+      state.path = state.path + '/' + href;
+      return;
+    }
+
+    if (_util.link.isSameURL(href)) {
+      return;
+    }
+
+    go(_util.origin + '/' + path);
   });
 
   window.onpopstate = function (e) {
@@ -101,23 +129,27 @@ exports.default = function () {
 
     (0, _util.saveScrollPosition)();
 
+    events.emit('before:route', { path: to });
+
     var req = get(_util.origin + '/' + to, function (title, root) {
-      router.navigate(to);
-      router.resolve(to);
-      document.title = title;
+      events.emit('after:route', { path: to, title: title, root: root });
+
       state.title = title;
       state.path = to;
-      cb(to, root);
+
+      cb(to, title, root);
     });
   }
 };
 
-},{"./lib/dom":2,"./lib/util":3,"delegate":5,"knot.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
+},{"./lib/dom.js":2,"./lib/util.js":3,"delegate":5,"knot.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _tarry = require('tarry.js');
 
 var _util = require('./util');
 
@@ -185,45 +217,33 @@ exports.default = function (root, duration, events) {
     var title = dom.head.getElementsByTagName('title')[0].innerHTML;
     var main = document.getElementById(root);
 
-    document.documentElement.classList.add('is-transitioning');
-
-    events.emit('pageTransitionStart');
-
-    // Fix height
-    main.style.height = returnSize(main, 'Height') + 'px';
-
-    setTimeout(function () {
-      main.innerHTML = dom.getElementById(root).innerHTML;
-
-      setTimeout(function () {
-        /**
-         * Run callback: updating routes, etc
-         */
-        cb(title, main);
-
-        /**
-         * Fire any script tags that are
-         * now in the new DOM
-         */
-        evalScripts(main);
-
-        (0, _util.restoreScrollPos)();
-      }, 0);
-
-      setTimeout(function () {
-        document.documentElement.classList.remove('is-transitioning');
-
-        main.style.height = '';
-
-        setTimeout(function () {
-          events.emit('pageTransitionEnd', title);
-        }, duration);
-      }, duration);
+    var start = (0, _tarry.tarry)(function () {
+      events.emit('before:transition');
+      document.documentElement.classList.add('is-transitioning');
+      main.style.height = returnSize(main, 'Height') + 'px';
     }, duration);
+
+    var render = (0, _tarry.tarry)(function () {
+      main.innerHTML = dom.getElementById(root).innerHTML;
+      cb(title, main);
+      evalScripts(main);
+      (0, _util.restoreScrollPos)();
+    }, duration);
+
+    var removeTransitionStyles = (0, _tarry.tarry)(function () {
+      document.documentElement.classList.remove('is-transitioning');
+      main.style.height = '';
+    }, duration);
+
+    var signalEnd = (0, _tarry.tarry)(function () {
+      return events.emit('after:transition');
+    }, duration);
+
+    (0, _tarry.queue)(start, render, removeTransitionStyles, signalEnd)();
   };
 };
 
-},{"./util":3}],3:[function(require,module,exports){
+},{"./util":3,"tarry.js":10}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -846,5 +866,88 @@ return /******/ (function(modules) { // webpackBootstrap
 });
 ;
 
+},{}],10:[function(require,module,exports){
+(function (global){
+"use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+(function (f) {
+  if ((typeof exports === "undefined" ? "undefined" : _typeof(exports)) === "object" && typeof module !== "undefined") {
+    module.exports = f();
+  } else if (typeof define === "function" && define.amd) {
+    define([], f);
+  } else {
+    var g;if (typeof window !== "undefined") {
+      g = window;
+    } else if (typeof global !== "undefined") {
+      g = global;
+    } else if (typeof self !== "undefined") {
+      g = self;
+    } else {
+      g = this;
+    }g.tarry = f();
+  }
+})(function () {
+  var define, module, exports;return function e(t, n, r) {
+    function s(o, u) {
+      if (!n[o]) {
+        if (!t[o]) {
+          var a = typeof require == "function" && require;if (!u && a) return a(o, !0);if (i) return i(o, !0);var f = new Error("Cannot find module '" + o + "'");throw f.code = "MODULE_NOT_FOUND", f;
+        }var l = n[o] = { exports: {} };t[o][0].call(l.exports, function (e) {
+          var n = t[o][1][e];return s(n ? n : e);
+        }, l, l.exports, e, t, n, r);
+      }return n[o].exports;
+    }var i = typeof require == "function" && require;for (var o = 0; o < r.length; o++) {
+      s(r[o]);
+    }return s;
+  }({ 1: [function (require, module, exports) {
+      "use strict";
+
+      Object.defineProperty(exports, "__esModule", {
+        value: true
+      });
+
+      function _toConsumableArray(arr) {
+        if (Array.isArray(arr)) {
+          for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+            arr2[i] = arr[i];
+          }return arr2;
+        } else {
+          return Array.from(arr);
+        }
+      }
+
+      var run = function run(cb, args) {
+        cb();
+        args.length > 0 ? args.shift().apply(undefined, _toConsumableArray(args)) : null;
+      };
+
+      var tarry = exports.tarry = function tarry(cb) {
+        var delay = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+        return function () {
+          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+          }
+
+          return delay ? setTimeout(function () {
+            return run(cb, args);
+          }, delay) : run(cb, args);
+        };
+      };
+
+      var queue = exports.queue = function queue() {
+        for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+          args[_key2] = arguments[_key2];
+        }
+
+        return function () {
+          return args.shift().apply(undefined, args);
+        };
+      };
+    }, {}] }, {}, [1])(1);
+});
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[1])(1)
 });
