@@ -15,19 +15,25 @@ const router = new navigo(origin)
 
 const state = {
   _state: {
-    path: '',
-    title: '' 
+    path: '/',
+    title: '',
+    prev: {
+      path: '/',
+      title: '',
+    }
   },
   get path(){
     return this._state.path
   },
   set path(loc){
+    this._state.prev.path = this.path
     this._state.path = loc
     router.navigate(loc)
     router.resolve(loc)
     setActiveLinks(loc)
   },
   get title(){
+    this._state.prev.title = this.title
     return this._state.title
   },
   set title(val){
@@ -97,7 +103,7 @@ export default (options = {}) => {
       url: path 
     }, (status, res, req) => {
       if (req.status < 200 || req.status > 300 && req.status !== 304){
-        return window.location.reload()
+        return window.location = `${origin}/${state._state.prev.path}`
       }
       render(req.response, cb) 
     })
@@ -110,11 +116,12 @@ export default (options = {}) => {
 
     events.emit('before:route', {path: to})
 
+    state.path = to
+
     let req = get(`${origin}/${to}`, (title, root) => {
       events.emit('after:route', {path: to, title, root})
 
       state.title = title
-      state.path = to
 
       cb(to, title, root)
     })
