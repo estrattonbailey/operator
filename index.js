@@ -7,15 +7,16 @@ import {
   origin, 
   sanitize,
   saveScrollPosition, 
-  link
+  link,
+  setActiveLinks
 } from './lib/util.js'
 
 const router = new navigo(origin)
 
 const state = {
   _state: {
-    path: window.location.pathname,
-    title: document.title 
+    path: '',
+    title: '' 
   },
   get path(){
     return this._state.path
@@ -24,6 +25,7 @@ const state = {
     this._state.path = loc
     router.navigate(loc)
     router.resolve(loc)
+    setActiveLinks(loc)
   },
   get title(){
     return this._state.title
@@ -83,6 +85,9 @@ export default (options = {}) => {
   window.onpopstate = e => {
     go(e.target.location.href)
   }
+
+  state.path = window.location.pathname
+  state.title = document.title
 
   return instance
 
