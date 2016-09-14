@@ -89,7 +89,19 @@ export default (options = {}) => {
   })
 
   window.onpopstate = e => {
+    if (!matches(e.target.location.href, ignore)){ return }
+
     go(e.target.location.href)
+  }
+
+  if ('scrollRestoration' in history){
+    history.scrollRestoration = 'manual'
+
+    if (history.state && history.state.scrollTop !== undefined){
+      window.scrollTo(0, history.state.scrollTop)
+    }
+
+    window.onbeforeunload = saveScrollPosition 
   }
 
   state.path = window.location.pathname

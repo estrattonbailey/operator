@@ -35,18 +35,25 @@ var router = new _navigo2.default(_util.origin);
 
 var state = {
   _state: {
-    path: window.location.pathname,
-    title: document.title
+    path: '/',
+    title: '',
+    prev: {
+      path: '/',
+      title: ''
+    }
   },
   get path() {
     return this._state.path;
   },
   set path(loc) {
+    this._state.prev.path = this.path;
     this._state.path = loc;
     router.navigate(loc);
     router.resolve(loc);
+    (0, _util.setActiveLinks)(loc);
   },
   get title() {
+    this._state.prev.title = this.title;
     return this._state.title;
   },
   set title(val) {
@@ -108,6 +115,9 @@ exports.default = function () {
     go(e.target.location.href);
   };
 
+  state.path = window.location.pathname;
+  state.title = document.title;
+
   return instance;
 
   function get(path, cb) {
@@ -116,7 +126,7 @@ exports.default = function () {
       url: path
     }, function (status, res, req) {
       if (req.status < 200 || req.status > 300 && req.status !== 304) {
-        return window.location.reload();
+        return window.location = _util.origin + '/' + state._state.prev.path;
       }
       render(req.response, cb);
     });
@@ -131,11 +141,12 @@ exports.default = function () {
 
     events.emit('before:route', { path: to });
 
+    state.path = to;
+
     var req = get(_util.origin + '/' + to, function (title, root) {
       events.emit('after:route', { path: to, title: title, root: root });
 
       state.title = title;
-      state.path = to;
 
       cb(to, title, root);
     });
@@ -153,6 +164,8 @@ var _tarry = require('tarry.js');
 
 var _util = require('./util');
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 /**
  * Init new native parser
  */
@@ -168,24 +181,37 @@ var parseResponse = function parseResponse(html) {
 };
 
 /**
- * TODO
- * 1. Fire script links too, not just bodies
- *
  * Finds all <script> tags in the new
  * markup and evaluates their contents
  *
- * @param {object} context DOM node containing new markup via AJAX
+ * @param {object} root DOM node containing new markup via AJAX
+ * @param {...object} sources Other DOM nodes to scrape script tags from 
  */
-var evalScripts = function evalScripts(context) {
-  var tags = context.getElementsByTagName('script');
-
-  for (var i = 0; i < tags.length; i++) {
-    try {
-      eval(tags[i].innerHTML);
-    } catch (e) {
-      console.log('Script eval() error:', e);
-    }
+var evalScripts = function evalScripts(root) {
+  for (var _len = arguments.length, sources = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    sources[_key - 1] = arguments[_key];
   }
+
+  var tags = sources.reduce(function (prev, curr) {
+    prev.push.apply(prev, _toConsumableArray(Array.prototype.slice.call(curr.getElementsByTagName('script'))));
+    return prev;
+  }, []);
+
+  tags.push.apply(tags, _toConsumableArray(Array.prototype.slice.call(root.getElementsByTagName('script'))));
+
+  tags.forEach(function (t) {
+    var s = document.createElement('script');[].forEach.call(t.attributes, function (a) {
+      s.setAttribute(a.name, a.value);
+    });
+
+    s.innerHTML = t.innerHTML;
+
+    try {
+      root.replaceChild(s, t);
+    } catch (e) {
+      root.insertBefore(s, root.children[0]);
+    }
+  });
 };
 
 /**
@@ -226,7 +252,7 @@ exports.default = function (root, duration, events) {
     var render = (0, _tarry.tarry)(function () {
       main.innerHTML = dom.getElementById(root).innerHTML;
       cb(title, main);
-      evalScripts(main);
+      evalScripts(main, dom.head);
       (0, _util.restoreScrollPos)();
     }, duration);
 
@@ -249,6 +275,9 @@ exports.default = function (root, duration, events) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var getOrigin = function getOrigin(url) {
   return url.origin || url.protocol + '//' + url.host;
 };
@@ -316,6 +345,18 @@ var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
   } else {
     window.scrollTo(0, 0);
   }
+};
+
+var activeLinks = [];
+var setActiveLinks = exports.setActiveLinks = function setActiveLinks(path) {
+  activeLinks.forEach(function (a) {
+    return a.classList.remove('is-active');
+  });
+  activeLinks.splice(0, activeLinks.length);
+  activeLinks.push.apply(activeLinks, _toConsumableArray(Array.prototype.slice.call(document.querySelectorAll('[href$="' + path + '"]'))));
+  activeLinks.forEach(function (a) {
+    return a.classList.add('is-active');
+  });
 };
 
 },{}],4:[function(require,module,exports){
