@@ -141,15 +141,14 @@ export default (options = {}) => {
 
     events.emit('before:route', {path: to})
 
-    let req = get(`${origin}/${to}`, (title, root) => {
-      events.emit('after:route', {path: to, title, root})
+    let req = get(`${origin}/${to}`, title => {
+      events.emit('after:route', {path: to, title})
 
-      cb(to, title, root)
+      cb(to, title)
     })
   }
 
   function pushRoute(loc, title){
-    events.emit('after:route', {path: loc, title})
     state.path = loc
     state.title = title
   }
