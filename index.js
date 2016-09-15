@@ -15,8 +15,8 @@ const router = new navigo(origin)
 
 const state = {
   _state: {
-    path: '/',
-    title: '',
+    path: window.location.pathname,
+    title: document.title,
     prev: {
       path: '/',
       title: '',
@@ -28,8 +28,6 @@ const state = {
   set path(loc){
     this._state.prev.path = this.path
     this._state.path = loc
-    router.navigate(loc)
-    router.resolve(loc)
     setActiveLinks(loc)
   },
   get title(){
@@ -85,13 +83,35 @@ export default (options = {}) => {
       link.isSameURL(href)
     ){ return }
 
-    go(`${origin}/${path}`)
+    saveScrollPosition()
+
+    go(`${origin}/${path}`, (to, title) => {
+      router.navigate(to)
+
+      // Update state
+      pushRoute(to, title)
+    })
   })
 
   window.onpopstate = e => {
-    if (!matches(e.target.location.href, ignore)){ return }
+    let to = e.target.location.href
 
-    go(e.target.location.href)
+    if (matches(to, ignore)){ 
+      window.location.reload()
+      return 
+    }
+
+    go(to, (loc, title) => {
+      /**
+       * Popstate bypasses router, so we 
+       * need to tell it where we went to
+       * without pushing state
+       */
+      router.resolve(loc)
+
+      // Update state
+      pushRoute(loc, title)
+    })
   }
 
   if ('scrollRestoration' in history){
@@ -103,11 +123,6 @@ export default (options = {}) => {
 
     window.onbeforeunload = saveScrollPosition 
   }
-
-  state.path = window.location.pathname
-  state.title = document.title
-
-  return instance
 
   function get(path, cb){
     return nanoajax.ajax({ 
@@ -124,18 +139,20 @@ export default (options = {}) => {
   function go(path, cb = () => {}){
     let to = sanitize(path)
 
-    saveScrollPosition()
-
     events.emit('before:route', {path: to})
-
-    state.path = to
 
     let req = get(`${origin}/${to}`, (title, root) => {
       events.emit('after:route', {path: to, title, root})
 
-      state.title = title
-
       cb(to, title, root)
     })
   }
+
+  function pushRoute(loc, title){
+    events.emit('after:route', {path: loc, title})
+    state.path = loc
+    state.title = title
+  }
+
+  return instance
 }
