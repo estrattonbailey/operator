@@ -77,7 +77,7 @@ export default (options = {}) => {
 
     if (link.isHash(href)){ 
       events.emit('hash', href)
-      pushRoute(`${state.route}/${href}`)
+      router.navigate(`${state.route}/${href}`)
       return
     }
 
@@ -152,9 +152,9 @@ export default (options = {}) => {
     })
   }
 
-  function pushRoute(loc, title){
+  function pushRoute(loc, title = null){
     state.route = loc
-    state.title = title
+    title ? state.title = title : null
   }
 
   return instance
