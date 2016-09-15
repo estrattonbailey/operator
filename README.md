@@ -34,9 +34,9 @@ import operator from 'operator.js'
 Operator emits the following events:
 
 #### before:route
-Before the route is resolved and the page loaded. This could be used to force redirects using `operator.go()`. The callback recieves the route to be resolved.
+Before the route is resolved and the page loaded. The callback recieves the route to be resolved.
 ```javascript
-operator.on('before:route', ({ path }) => {
+operator.on('before:route', ({ route }) => {
   // do stuff  
 })
 ```
@@ -44,7 +44,7 @@ operator.on('before:route', ({ path }) => {
 #### after:route
 After the route is resolved and the page loaded. The callback recieves the new route and page title.
 ```javascript
-operator.on('after:route', ({ path, title }) => {
+operator.on('after:route', ({ route, title }) => {
   // do stuff  
 })
 ```
@@ -73,10 +73,10 @@ import jump from 'jump.js'
 operator.on('hash', hash => jump(hash, { duration: 500 }))
 ```
 
-### .go(path, callback)
+### .go(route, callback)
 Navigate to a given route.
 ```javascript
-operator.go('/products', (path, title) => {
+operator.go('/products', (route, title) => {
   // do stuff
 })
 ```

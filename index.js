@@ -15,19 +15,19 @@ const router = new navigo(origin)
 
 const state = {
   _state: {
-    path: window.location.pathname,
+    route: window.location.pathname,
     title: document.title,
     prev: {
-      path: '/',
+      route: '/',
       title: '',
     }
   },
-  get path(){
-    return this._state.path
+  get route(){
+    return this._state.route
   },
-  set path(loc){
-    this._state.prev.path = this.path
-    this._state.path = loc
+  set route(loc){
+    this._state.prev.route = this.route
+    this._state.route = loc
     setActiveLinks(loc)
   },
   get title(){
@@ -39,8 +39,8 @@ const state = {
   }
 }
 
-const matches = (path, tests) => (
-  tests.filter(t => t(path)).length > 0 ? true : false 
+const matches = (route, tests) => (
+  tests.filter(t => t(route)).length > 0 ? true : false 
 )
 
 export default (options = {}) => {
@@ -65,19 +65,19 @@ export default (options = {}) => {
   delegate(document, 'a', 'click', (e) => {
     let a = e.delegateTarget
     let href = a.getAttribute('href') || '/'
-    let path = sanitize(href)
+    let route = sanitize(href)
 
     if (
       !link.isSameOrigin(href)
       || a.getAttribute('rel') === 'external'
-      || matches(path, ignore)
+      || matches(route, ignore)
     ){ return }
 
     e.preventDefault()
 
     if (link.isHash(href)){ 
       events.emit('hash', href)
-      state.path = `${state.path}/${href}` 
+      pushRoute(`${state.route}/${href}`)
       return
     }
 
@@ -87,7 +87,7 @@ export default (options = {}) => {
 
     saveScrollPosition()
 
-    go(`${origin}/${path}`, (to, title) => {
+    go(`${origin}/${route}`, (to, title) => {
       router.navigate(to)
 
       // Update state
@@ -126,34 +126,34 @@ export default (options = {}) => {
     window.onbeforeunload = saveScrollPosition 
   }
 
-  function get(path, cb){
+  function get(route, cb){
     return nanoajax.ajax({ 
       method: 'GET', 
-      url: path 
+      url: route 
     }, (status, res, req) => {
       if (req.status < 200 || req.status > 300 && req.status !== 304){
-        return window.location = `${origin}/${state._state.prev.path}`
+        return window.location = `${origin}/${state._state.prev.route}`
       }
       render(req.response, cb) 
     })
   }
 
-  function go(path, cb = () => {}){
-    let to = sanitize(path)
+  function go(route, cb = () => {}){
+    let to = sanitize(route)
 
-    events.emit('before:route', {path: to})
+    events.emit('before:route', {route: to})
 
     if (state.paused){ return }
 
     let req = get(`${origin}/${to}`, title => {
-      events.emit('after:route', {path: to, title})
+      events.emit('after:route', {route: to, title})
 
       cb(to, title)
     })
   }
 
   function pushRoute(loc, title){
-    state.path = loc
+    state.route = loc
     state.title = title
   }
 
