@@ -97,5 +97,9 @@ operator.getState() // { route: '/products', title: 'Products' }
 ## Related Projects
 - Handle `hash` events with [jump.js](https://github.com/callmecavs/jump.js), another neat little library from [@callmecavs](https://github.com/callmecavs)
 
+## TODO
+1. Scroll to point if URL contains a hash on page load
+2. Redirects would be cool
+
 * * *
 MIT
