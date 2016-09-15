@@ -53,6 +53,8 @@ export default (options = {}) => {
 
   const instance = Object.create({
     ...events,
+    stop(){ state.paused = true },
+    start(){ state.paused = false },
     go
   }, {
     getState: {
@@ -140,6 +142,8 @@ export default (options = {}) => {
     let to = sanitize(path)
 
     events.emit('before:route', {path: to})
+
+    if (state.paused){ return }
 
     let req = get(`${origin}/${to}`, title => {
       events.emit('after:route', {path: to, title})
