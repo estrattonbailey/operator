@@ -35,21 +35,19 @@ var router = new _navigo2.default(_util.origin);
 
 var state = {
   _state: {
-    path: '/',
-    title: '',
+    route: window.location.pathname,
+    title: document.title,
     prev: {
-      path: '/',
+      route: '/',
       title: ''
     }
   },
-  get path() {
-    return this._state.path;
+  get route() {
+    return this._state.route;
   },
-  set path(loc) {
-    this._state.prev.path = this.path;
-    this._state.path = loc;
-    router.navigate(loc);
-    router.resolve(loc);
+  set route(loc) {
+    this._state.prev.route = this.route;
+    this._state.route = loc;
     (0, _util.setActiveLinks)(loc);
   },
   get title() {
@@ -61,9 +59,9 @@ var state = {
   }
 };
 
-var matches = function matches(path, tests) {
+var matches = function matches(route, tests) {
   return tests.filter(function (t) {
-    return t(path);
+    return t(route);
   }).length > 0 ? true : false;
 };
 
@@ -78,6 +76,13 @@ exports.default = function () {
   var render = (0, _dom2.default)(root, duration, events);
 
   var instance = Object.create(_extends({}, events, {
+    stop: function stop() {
+      state.paused = true;
+    },
+    start: function start() {
+      state.paused = false;
+    },
+
     go: go
   }), {
     getState: {
@@ -90,9 +95,9 @@ exports.default = function () {
   (0, _delegate2.default)(document, 'a', 'click', function (e) {
     var a = e.delegateTarget;
     var href = a.getAttribute('href') || '/';
-    var path = (0, _util.sanitize)(href);
+    var route = (0, _util.sanitize)(href);
 
-    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(path, ignore)) {
+    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(route, ignore)) {
       return;
     }
 
@@ -100,7 +105,7 @@ exports.default = function () {
 
     if (_util.link.isHash(href)) {
       events.emit('hash', href);
-      state.path = state.path + '/' + href;
+      router.navigate(state.route + '/' + href);
       return;
     }
 
@@ -108,49 +113,85 @@ exports.default = function () {
       return;
     }
 
-    go(_util.origin + '/' + path);
+    (0, _util.saveScrollPosition)();
+
+    go(_util.origin + '/' + route, function (to, title) {
+      router.navigate(to);
+
+      // Update state
+      pushRoute(to, title);
+    });
   });
 
   window.onpopstate = function (e) {
-    go(e.target.location.href);
+    var to = e.target.location.href;
+
+    if (matches(to, ignore)) {
+      window.location.reload();
+      return;
+    }
+
+    go(to, function (loc, title) {
+      /**
+       * Popstate bypasses router, so we 
+       * need to tell it where we went to
+       * without pushing state
+       */
+      router.resolve(loc);
+
+      // Update state
+      pushRoute(loc, title);
+    });
   };
 
-  state.path = window.location.pathname;
-  state.title = document.title;
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
 
-  return instance;
+    if (history.state && history.state.scrollTop !== undefined) {
+      window.scrollTo(0, history.state.scrollTop);
+    }
 
-  function get(path, cb) {
+    window.onbeforeunload = _util.saveScrollPosition;
+  }
+
+  function get(route, cb) {
     return _nanoajax2.default.ajax({
       method: 'GET',
-      url: path
+      url: route
     }, function (status, res, req) {
       if (req.status < 200 || req.status > 300 && req.status !== 304) {
-        return window.location = _util.origin + '/' + state._state.prev.path;
+        return window.location = _util.origin + '/' + state._state.prev.route;
       }
       render(req.response, cb);
     });
   }
 
-  function go(path) {
+  function go(route) {
     var cb = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
 
-    var to = (0, _util.sanitize)(path);
+    var to = (0, _util.sanitize)(route);
 
-    (0, _util.saveScrollPosition)();
+    events.emit('before:route', { route: to });
 
-    events.emit('before:route', { path: to });
+    if (state.paused) {
+      return;
+    }
 
-    state.path = to;
+    var req = get(_util.origin + '/' + to, function (title) {
+      events.emit('after:route', { route: to, title: title });
 
-    var req = get(_util.origin + '/' + to, function (title, root) {
-      events.emit('after:route', { path: to, title: title, root: root });
-
-      state.title = title;
-
-      cb(to, title, root);
+      cb(to, title);
     });
   }
+
+  function pushRoute(loc) {
+    var title = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+    state.route = loc;
+    title ? state.title = title : null;
+  }
+
+  return instance;
 };
 
 },{"./lib/dom.js":2,"./lib/util.js":3,"delegate":5,"knot.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
@@ -241,7 +282,7 @@ exports.default = function (root, duration, events) {
   return function (markup, cb) {
     var dom = parseResponse(markup);
     var title = dom.head.getElementsByTagName('title')[0].innerHTML;
-    var main = document.getElementById(root);
+    var main = document.querySelector(root);
 
     var start = (0, _tarry.tarry)(function () {
       events.emit('before:transition');
@@ -250,7 +291,7 @@ exports.default = function (root, duration, events) {
     }, duration);
 
     var render = (0, _tarry.tarry)(function () {
-      main.innerHTML = dom.getElementById(root).innerHTML;
+      main.innerHTML = dom.querySelector(root).innerHTML;
       cb(title, main);
       evalScripts(main, dom.head);
       (0, _util.restoreScrollPos)();
@@ -300,8 +341,8 @@ var originRegEx = exports.originRegEx = new RegExp(origin);
  * @return {string} URL sans origin and sans leading comma
  */
 var sanitize = exports.sanitize = function sanitize(url) {
-  var path = url.replace(originRegEx, '');
-  var clean = path.match(/^\//) ? path.replace(/\/{1}/, '') : path; // remove /
+  var route = url.replace(originRegEx, '');
+  var clean = route.match(/^\//) ? route.replace(/\/{1}/, '') : route; // remove /
   return clean === '' ? '/' : clean;
 };
 
@@ -339,21 +380,22 @@ var saveScrollPosition = exports.saveScrollPosition = function saveScrollPositio
  * if available
  */
 var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
-  if (history.state && history.state.scrollTop !== undefined) {
-    window.scrollTo(0, history.state.scrollTop);
-    return history.state.scrollTop;
+  var scrollTop = history.state.scrollTop;
+  if (history.state && scrollTop !== undefined) {
+    window.scrollTo(0, scrollTop);
+    return scrollTop;
   } else {
     window.scrollTo(0, 0);
   }
 };
 
 var activeLinks = [];
-var setActiveLinks = exports.setActiveLinks = function setActiveLinks(path) {
+var setActiveLinks = exports.setActiveLinks = function setActiveLinks(route) {
   activeLinks.forEach(function (a) {
     return a.classList.remove('is-active');
   });
   activeLinks.splice(0, activeLinks.length);
-  activeLinks.push.apply(activeLinks, _toConsumableArray(Array.prototype.slice.call(document.querySelectorAll('[href$="' + path + '"]'))));
+  activeLinks.push.apply(activeLinks, _toConsumableArray(Array.prototype.slice.call(document.querySelectorAll('[href$="' + route + '"]'))));
   activeLinks.forEach(function (a) {
     return a.classList.add('is-active');
   });
