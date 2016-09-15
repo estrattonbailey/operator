@@ -1,6 +1,6 @@
 {
-  "name": "operator",
-  "version": "0.0.2",
+  "name": "operator.js",
+  "version": "0.1.0",
   "description": "",
   "main": "dist/operator.js",
   "scripts": {
