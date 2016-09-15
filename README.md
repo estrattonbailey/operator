@@ -1,4 +1,4 @@
-# Operator [![npm](https://img.shields.io/npm/v/operator.svg?maxAge=2592000)](https://www.npmjs.com/package/operator)
+# Operator [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
 Operator is an AJAX and routing library that transforms a normal site into a Single Page Application (SPA). **6.39kb gzipped.**
 
 ## Install
