@@ -23,7 +23,13 @@
     "type": "git",
     "url": "git+ssh://git@github.com/estrattonbailey/operator.js.git"
   },
-  "keywords": [],
+  "keywords": [
+    "ajax",
+    "routing",
+    "pjax",
+    "ajaxify",
+    "single page application"
+  ],
   "author": "estrattonbailey",
   "license": "MIT",
   "bugs": {
