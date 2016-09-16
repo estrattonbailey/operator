@@ -1,5 +1,5 @@
 # Operator [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
-Operator is an AJAX and routing library that transforms a normal site into a Single Page Application (SPA). **6.39kb gzipped.**
+An AJAX + routing library that transforms a normal site into a Single Page Application (SPA). **6.39kb gzipped.**
 
 ## Install
 ```javascript
@@ -95,11 +95,11 @@ operator.getState() // { route: '/products', title: 'Products' }
 - [tarry.js:](https://github.com/estrattonbailey/tarry.js) A really tiny sequencing library with support for delays. by [@estrattonbailey](https://github.com/estrattonbailey)
 
 ## Related Projects
-- Handle `hash` events with [jump.js](https://github.com/callmecavs/jump.js), another neat little library from [@callmecavs](https://github.com/callmecavs)
+- [evx](https://github.com/estrattonbailey/evx) Route-managed client-side binding controller in ES6. Useful for preventing double-bindings between pages. by [@estrattonbailey](https://github.com/estrattonbailey)
+- [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
 ## TODO
 1. Scroll to point if URL contains a hash on page load
 2. Redirects would be cool
 
-* * *
-MIT
+MIT License - Would love to hear your thoughts! :)
