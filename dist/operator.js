@@ -35,8 +35,8 @@ var router = new _navigo2.default(_util.origin);
 
 var state = {
   _state: {
-    route: window.location.pathname,
-    title: document.title,
+    route: '',
+    title: '',
     prev: {
       route: '/',
       title: ''
@@ -51,10 +51,11 @@ var state = {
     (0, _util.setActiveLinks)(loc);
   },
   get title() {
-    this._state.prev.title = this.title;
     return this._state.title;
   },
   set title(val) {
+    this._state.prev.title = this.title;
+    this._state.title = val;
     document.title = val;
   }
 };
@@ -91,6 +92,9 @@ exports.default = function () {
       }
     }
   });
+
+  state.route = window.location.pathname;
+  state.title = document.title;
 
   (0, _delegate2.default)(document, 'a', 'click', function (e) {
     var a = e.delegateTarget;
@@ -179,7 +183,6 @@ exports.default = function () {
 
     var req = get(_util.origin + '/' + to, function (title) {
       events.emit('after:route', { route: to, title: title });
-
       cb(to, title);
     });
   }
@@ -188,7 +191,8 @@ exports.default = function () {
     var title = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
     state.route = loc;
-    title ? state.title = title : null;
+    console.log(title);
+    !!title ? state.title = title : null;
   }
 
   return instance;
@@ -357,7 +361,7 @@ var link = exports.link = {
     return origin === getOrigin(parseURL(href));
   },
   isHash: function isHash(href) {
-    return href.match(/^\#/) ? true : false;
+    return href.match(/^#/) ? true : false;
   },
   isSameURL: function isSameURL(href) {
     return window.location.pathname === parseURL(href).pathname;

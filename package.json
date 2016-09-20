@@ -3,6 +3,7 @@
   "version": "0.1.2",
   "description": "",
   "main": "dist/operator.js",
+  "jsnext:main": "index.js",
   "scripts": {
     "build": "mkdir -p dist && browserify index.js --standalone operator > dist/operator.js",
     "size": "bundle-size ./dist/operator.js",

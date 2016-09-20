@@ -15,8 +15,8 @@ const router = new navigo(origin)
 
 const state = {
   _state: {
-    route: window.location.pathname,
-    title: document.title,
+    route: '',
+    title: '',
     prev: {
       route: '/',
       title: '',
@@ -31,10 +31,11 @@ const state = {
     setActiveLinks(loc)
   },
   get title(){
-    this._state.prev.title = this.title
     return this._state.title
   },
   set title(val){
+    this._state.prev.title = this.title
+    this._state.title = val
     document.title = val
   }
 }
@@ -61,6 +62,9 @@ export default (options = {}) => {
       value: () => state._state
     }
   })
+
+  state.route = window.location.pathname
+  state.title = document.title 
 
   delegate(document, 'a', 'click', (e) => {
     let a = e.delegateTarget
@@ -147,14 +151,14 @@ export default (options = {}) => {
 
     let req = get(`${origin}/${to}`, title => {
       events.emit('after:route', {route: to, title})
-
       cb(to, title)
     })
   }
 
   function pushRoute(loc, title = null){
     state.route = loc
-    title ? state.title = title : null
+    console.log(title)
+    !!title ? state.title = title : null
   }
 
   return instance
