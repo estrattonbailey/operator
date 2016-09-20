@@ -2,11 +2,11 @@
   "name": "operator.js",
   "version": "0.1.2",
   "description": "",
-  "main": "dist/operator.js",
+  "main": "index.js",
   "jsnext:main": "index.js",
   "scripts": {
-    "build": "mkdir -p dist && browserify index.js --standalone operator > dist/operator.js",
-    "size": "bundle-size ./dist/operator.js",
+    "build": "mkdir -p browser && browserify index.js --standalone operator > browser/index.js",
+    "size": "bundle-size ./browser/index.js",
     "test": "ava test -v"
   },
   "browserify": {
