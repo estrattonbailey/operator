@@ -157,8 +157,7 @@ export default (options = {}) => {
 
   function pushRoute(loc, title = null){
     state.route = loc
-    console.log(title)
-    !!title ? state.title = title : null
+    title ? state.title = title : null
   }
 
   return instance

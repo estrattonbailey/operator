@@ -191,8 +191,7 @@ exports.default = function () {
     var title = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
     state.route = loc;
-    console.log(title);
-    !!title ? state.title = title : null;
+    title ? state.title = title : null;
   }
 
   return instance;
