@@ -60,12 +60,6 @@ var state = {
   }
 };
 
-var matches = function matches(route, tests) {
-  return tests.filter(function (t) {
-    return t(route);
-  }).length > 0 ? true : false;
-};
-
 exports.default = function () {
   var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -101,17 +95,11 @@ exports.default = function () {
     var href = a.getAttribute('href') || '/';
     var route = (0, _util.sanitize)(href);
 
-    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(route, ignore)) {
+    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(e, route)) {
       return;
     }
 
     e.preventDefault();
-
-    if (_util.link.isHash(href)) {
-      events.emit('hash', href);
-      router.navigate(state.route + '/' + href);
-      return;
-    }
 
     if (_util.link.isSameURL(href)) {
       return;
@@ -130,7 +118,7 @@ exports.default = function () {
   window.onpopstate = function (e) {
     var to = e.target.location.href;
 
-    if (matches(to, ignore)) {
+    if (matches(e, to)) {
       window.location.reload();
       return;
     }
@@ -192,6 +180,20 @@ exports.default = function () {
 
     state.route = loc;
     title ? state.title = title : null;
+  }
+
+  function matches(event, route) {
+    return ignore.filter(function (t) {
+      if (Array.isArray(t)) {
+        var res = t[1](route);
+        if (res) {
+          events.emit(t[0], { route: route, event: event });
+        }
+        return res;
+      } else {
+        return t(route);
+      }
+    }).length > 0 ? true : false;
   }
 
   return instance;
@@ -326,14 +328,8 @@ var getOrigin = function getOrigin(url) {
   return url.origin || url.protocol + '//' + url.host;
 };
 
-/**
- * Standardize base URL
- */
 var origin = exports.origin = getOrigin(window.location);
 
-/**
- * Create regex to test links
- */
 var originRegEx = exports.originRegEx = new RegExp(origin);
 
 /**
@@ -367,21 +363,14 @@ var link = exports.link = {
   }
 };
 
-/**
- * Set scroll position on current history
- * state so that when returning to the
- * page we can scroll to the previous position
- */
-var saveScrollPosition = exports.saveScrollPosition = function saveScrollPosition() {
-  var scrollTop = window.pageYOffset || window.scrollY || document.body.scrollTop;
-
-  window.history.replaceState({ scrollTop: scrollTop }, '');
+var getScrollPosition = exports.getScrollPosition = function getScrollPosition() {
+  return window.pageYOffset || window.scrollY;
 };
 
-/**
- * Restore previous scroll position,
- * if available
- */
+var saveScrollPosition = exports.saveScrollPosition = function saveScrollPosition() {
+  return window.history.replaceState({ scrollTop: getScrollPosition() }, '');
+};
+
 var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
   var scrollTop = history.state.scrollTop;
   if (history.state && scrollTop !== undefined) {

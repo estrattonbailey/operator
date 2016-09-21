@@ -6,7 +6,8 @@ import dom from './lib/dom.js'
 import { 
   origin, 
   sanitize,
-  saveScrollPosition, 
+  saveScrollPosition,
+  scrollToLocation,
   link,
   setActiveLinks
 } from './lib/util.js'
@@ -40,10 +41,6 @@ const state = {
   }
 }
 
-const matches = (route, tests) => (
-  tests.filter(t => t(route)).length > 0 ? true : false 
-)
-
 export default (options = {}) => {
   const root = options.root || document.body
   const duration = options.duration || 0
@@ -74,16 +71,10 @@ export default (options = {}) => {
     if (
       !link.isSameOrigin(href)
       || a.getAttribute('rel') === 'external'
-      || matches(route, ignore)
+      || matches(e, route)
     ){ return }
 
     e.preventDefault()
-
-    if (link.isHash(href)){ 
-      events.emit('hash', href)
-      router.navigate(`${state.route}/${href}`)
-      return
-    }
 
     if (
       link.isSameURL(href)
@@ -102,7 +93,7 @@ export default (options = {}) => {
   window.onpopstate = e => {
     let to = e.target.location.href
 
-    if (matches(to, ignore)){ 
+    if (matches(e, to)){ 
       window.location.reload()
       return 
     }
@@ -158,6 +149,18 @@ export default (options = {}) => {
   function pushRoute(loc, title = null){
     state.route = loc
     title ? state.title = title : null
+  }
+
+  function matches(event, route){
+    return ignore.filter(t => {
+      if (Array.isArray(t)){
+        let res = t[1](route)
+        if (res){ events.emit(t[0], {route, event}) }
+        return res
+      } else {
+        return t(route) 
+      }
+    }).length > 0 ? true : false
   }
 
   return instance

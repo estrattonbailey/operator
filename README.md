@@ -21,9 +21,38 @@ const app = operator({
 
 ## Options
 Operator accepts a single options object with the following keys:
-- `root` - a selector on the root element of your site
-- `duration` - page transition duration, if desired `default: 0`
-- `ignore` - an `array` of functions to test against the route. If a test returns true, the route is followed via normal page load instead of AJAX.
+
+#### root
+A selector for the root element of your site
+
+#### duration
+Page transition duration, if desired `default: 0`
+
+#### ignore
+An `array` of functions to test against the route. **Functions must return booleans.** If a test returns true, the route is followed via normal page load instead of AJAX. In the below example, routes matching `products` will be ignored:
+```javascript
+const app = operator({
+  root: '#root',
+  ignore: [
+    route => /products/.test(route)
+  ]
+})
+```
+Optionally, you can pass a sub-array containing a `name` value *and* a test function. If the test returns true, an event (`name`) is emitted with an object as payload. The payload object contains the native DOM event object and matched route. The example below intercepts anchor links, prevents default interaction, and smooth scrolls to the target element:
+```javascript
+const app = operator({
+  root: '#root',
+  ignore: [
+    ['hash', route => /#/.test(route)]
+  ]
+})
+
+app.on('hash', ({event, route}) => {
+  event.preventDefault()
+  let target = event.delegateTarget.getAttribute('href')
+  jump(target, { duration: 500 })
+})
+```
 
 ## API
 ```javascript 
@@ -63,14 +92,6 @@ After the page completes its transition. The callback recieves no params.
 operator.on('after:transition', () => {
   // do stuff  
 })
-```
-
-#### hash
-When a click event fires on an anchor i.e. `<a href="#anchor">Scroll Down</a>`
-```javascript
-import jump from 'jump.js'
-
-operator.on('hash', hash => jump(hash, { duration: 500 }))
 ```
 
 ### .go(route, callback)
