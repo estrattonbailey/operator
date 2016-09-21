@@ -24,15 +24,26 @@ Operator accepts a single options object with the following keys:
 
 #### root
 A selector for the root element of your site
+```javascript
+const app = operator({
+  root: '.js-root-element'
+})
+```
 
-#### duration
-Page transition duration, if desired `default: 0`
+#### duration (optional)
+Page transition duration, if desired. Operator adds an `is-transitioning` class to the `documentElement` while navigating for the duration provided here. `default: 0`
+```javascript
+const app = operator({
+  root: '.js-root-element',
+  duration: 1000
+})
+```
 
-#### ignore
+#### ignore (optional)
 An `array` of functions to test against the route. **Functions must return booleans.** If a test returns true, the route is followed via normal page load instead of AJAX. In the below example, routes matching `products` will be ignored:
 ```javascript
 const app = operator({
-  root: '#root',
+  root: '.js-root-element',
   ignore: [
     route => /products/.test(route)
   ]
@@ -111,7 +122,7 @@ operator.getState() // { route: '/products', title: 'Products' }
 
 #### Anchors
 By default, operator will ignore anchors and let native browser behavior take over. You can, however, intercept these hash events using the `ignore` option. The below example uses to [jump.js](https://github.com/callmecavs/jump.js) to smooth-scroll to the anchor target:
-```
+```javascript
 import jump from 'jump.js'
 
 const app = operator({
@@ -130,7 +141,7 @@ app.on('hash', ({event}) => {
 
 #### Client-side Redirects
 Using the `ignore` option, you can block a route and navigate to another, effectively creating a redirect. However, operator will **not redirect on initial load.** Currently.
-```
+```javascript
 const app = operator({
   root: '#root',
   ignore: [
@@ -156,6 +167,6 @@ app.on('products', ({event}) => {
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
 ## TODO
-1. Redirects would be cool
+1. On-page-load redirects?
 
 MIT License - Would love to hear your thoughts! :)
