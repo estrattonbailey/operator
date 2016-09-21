@@ -1,4 +1,4 @@
-import knot from 'knot.js'
+import loop from 'loop.js'
 import delegate from 'delegate'
 import nanoajax from 'nanoajax'
 import navigo from 'navigo'
@@ -46,7 +46,7 @@ export default (options = {}) => {
   const duration = options.duration || 0
   const ignore = options.ignore || []
 
-  const events = knot()
+  const events = loop()
   const render = dom(root, duration, events)
 
   const instance = Object.create({

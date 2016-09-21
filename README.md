@@ -109,10 +109,10 @@ operator.getState() // { route: '/products', title: 'Products' }
 ```
 
 ## Dependencies
-- [knot.js:](https://github.com/callmecavs/knot.js) A browser-based event emitter, for tying things together. by [@callmecavs](https://github.com/callmecavs)
 - [delegate:](https://github.com/zenorocha/delegate) Lightweight event delegation. by [@zenorocha](https://github.com/zenorocha)
 - [nanoajax:](https://github.com/yanatan16/nanoajax) An ajax library you need a microscope to see. by [@yanatan16](https://github.com/yanatan16)
 - [navigo:](https://github.com/krasimir/navigo) An ajax library you need a microscope to see. by [@krasimir](https://github.com/krasimir)
+- [loop.js:](https://github.com/callmecavs/loop.js) Part of a knot. Loop is a bare-bones pub/sub style event emitter. by [@estrattonbailey](https://github.com/estrattonbailey)
 - [tarry.js:](https://github.com/estrattonbailey/tarry.js) A really tiny sequencing library with support for delays. by [@estrattonbailey](https://github.com/estrattonbailey)
 
 ## Related Projects
@@ -120,7 +120,6 @@ operator.getState() // { route: '/products', title: 'Products' }
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
 ## TODO
-1. Scroll to point if URL contains a hash on page load
-2. Redirects would be cool
+1. Redirects would be cool
 
 MIT License - Would love to hear your thoughts! :)

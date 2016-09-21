@@ -7,9 +7,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _knot = require('knot.js');
+var _loop = require('loop.js');
 
-var _knot2 = _interopRequireDefault(_knot);
+var _loop2 = _interopRequireDefault(_loop);
 
 var _delegate = require('delegate');
 
@@ -67,7 +67,7 @@ exports.default = function () {
   var duration = options.duration || 0;
   var ignore = options.ignore || [];
 
-  var events = (0, _knot2.default)();
+  var events = (0, _loop2.default)();
   var render = (0, _dom2.default)(root, duration, events);
 
   var instance = Object.create(_extends({}, events, {
@@ -199,7 +199,7 @@ exports.default = function () {
   return instance;
 };
 
-},{"./lib/dom.js":2,"./lib/util.js":3,"delegate":5,"knot.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
+},{"./lib/dom.js":2,"./lib/util.js":3,"delegate":5,"loop.js":6,"nanoajax":8,"navigo":9}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -452,12 +452,42 @@ function listener(element, selector, type, callback) {
 module.exports = delegate;
 
 },{"closest":4}],6:[function(require,module,exports){
-/*!
- * Knot.js 1.1.1 - A browser-based event emitter, for tying things together.
- * Copyright (c) 2016 Michael Cavalea - https://github.com/callmecavs/knot.js
- * License: MIT
- */
-!function(n,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):n.Knot=e()}(this,function(){"use strict";var n={};n["extends"]=Object.assign||function(n){for(var e=1;e<arguments.length;e++){var t=arguments[e];for(var r in t)Object.prototype.hasOwnProperty.call(t,r)&&(n[r]=t[r])}return n};var e=function(){function e(n,e){return f[n]=f[n]||[],f[n].push(e),this}function t(n,t){return t._once=!0,e(n,t),this}function r(n){var e=arguments.length<=1||void 0===arguments[1]?!1:arguments[1];return e?f[n].splice(f[n].indexOf(e),1):delete f[n],this}function o(n){for(var e=this,t=arguments.length,o=Array(t>1?t-1:0),i=1;t>i;i++)o[i-1]=arguments[i];var u=f[n]&&f[n].slice();return u&&u.forEach(function(t){t._once&&r(n,t),t.apply(e,o)}),this}var i=arguments.length<=0||void 0===arguments[0]?{}:arguments[0],f={};return n["extends"]({},i,{on:e,once:t,off:r,emit:o})};return e});
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.default = function () {
+  var o = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  var listeners = {};
+
+  var on = function on(e) {
+    var cb = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+    if (!cb) return;
+    listeners[e] = listeners[e] || { queue: [] };
+    listeners[e].queue.push(cb);
+  };
+
+  var emit = function emit(e) {
+    var data = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+
+    var items = listeners[e] ? listeners[e].queue : false;
+    items && items.forEach(function (i) {
+      return i(data);
+    });
+  };
+
+  return _extends({}, o, {
+    emit: emit,
+    on: on
+  });
+};
+
 },{}],7:[function(require,module,exports){
 
 /**

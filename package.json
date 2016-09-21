@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "delegate": "^3.0.1",
-    "knot.js": "^1.1.1",
+    "loop.js": "0.0.1",
     "nanoajax": "^0.4.3",
     "navigo": "^2.2.0",
     "tarry.js": "0.0.1"
