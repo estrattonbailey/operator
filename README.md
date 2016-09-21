@@ -38,19 +38,18 @@ const app = operator({
   ]
 })
 ```
-Optionally, you can pass a sub-array containing a `name` value *and* a test function. If the test returns true, an event (`name`) is emitted with an object as payload. The payload object contains the native DOM event object and matched route. The example below intercepts anchor links, prevents default interaction, and smooth scrolls to the target element:
+Optionally, you can pass a sub-array containing a `name` value *and* a test function. If the test returns true, an event (`name`) is emitted with an object as payload. The payload object contains the native DOM event object returned from [delegate](https://github.com/zenorocha/delegate) and the matched route:
 ```javascript
 const app = operator({
   root: '#root',
   ignore: [
-    ['hash', route => /#/.test(route)]
+    ['products', route => /products/.test(route)]
   ]
 })
 
-app.on('hash', ({event, route}) => {
-  event.preventDefault()
-  let target = event.delegateTarget.getAttribute('href')
-  jump(target, { duration: 500 })
+app.on('products', ({event, route}) => {
+  // do stuff
+  // you can also event.preventDefault()
 })
 ```
 
@@ -106,6 +105,43 @@ operator.go('/products', (route, title) => {
 Returns an object with the current route and title values.
 ```javascript
 operator.getState() // { route: '/products', title: 'Products' }
+```
+
+## Common Use Cases
+
+#### Anchors
+By default, operator will ignore anchors and let native browser behavior take over. You can, however, intercept these hash events using the `ignore` option. The below example uses to [jump.js](https://github.com/callmecavs/jump.js) to smooth-scroll to the anchor target:
+```
+import jump from 'jump.js'
+
+const app = operator({
+  root: '#root',
+  ignore: [
+    ['hash', path => /#/.test(path)]
+  ]
+})
+
+app.on('hash', ({event}) => {
+  event.preventDefault()
+  let hash = event.delegateTarget.getAttribute('href')
+  jump(hash, { duration: 500 })
+})
+```
+
+#### Client-side Redirects
+Using the `ignore` option, you can block a route and navigate to another, effectively creating a redirect. However, operator will **not redirect on initial load.** Currently.
+```
+const app = operator({
+  root: '#root',
+  ignore: [
+    ['products', path => /products/.test(path)]
+  ]
+})
+
+app.on('products', ({event}) => {
+  event.preventDefault()
+  app.go('/')
+})
 ```
 
 ## Dependencies

@@ -95,7 +95,7 @@ exports.default = function () {
     var href = a.getAttribute('href') || '/';
     var route = (0, _util.sanitize)(href);
 
-    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(e, route)) {
+    if (!_util.link.isSameOrigin(href) || a.getAttribute('rel') === 'external' || matches(e, route) || _util.link.isHash(href)) {
       return;
     }
 
@@ -107,32 +107,30 @@ exports.default = function () {
 
     (0, _util.saveScrollPosition)();
 
-    go(_util.origin + '/' + route, function (to, title) {
-      router.navigate(to);
-
-      // Update state
-      pushRoute(to, title);
+    go(_util.origin + '/' + route, function (to) {
+      return router.navigate(to);
     });
   });
 
   window.onpopstate = function (e) {
     var to = e.target.location.href;
 
+    if (_util.link.isHash(to)) {
+      return;
+    }
+
     if (matches(e, to)) {
       window.location.reload();
       return;
     }
 
-    go(to, function (loc, title) {
-      /**
-       * Popstate bypasses router, so we 
-       * need to tell it where we went to
-       * without pushing state
-       */
-      router.resolve(loc);
-
-      // Update state
-      pushRoute(loc, title);
+    /**
+     * Popstate bypasses router, so we 
+     * need to tell it where we went to
+     * without pushing state
+     */
+    go(to, function (loc) {
+      return router.resolve(loc);
     });
   };
 
@@ -159,7 +157,7 @@ exports.default = function () {
   }
 
   function go(route) {
-    var cb = arguments.length <= 1 || arguments[1] === undefined ? function () {} : arguments[1];
+    var cb = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
     var to = (0, _util.sanitize)(route);
 
@@ -171,7 +169,10 @@ exports.default = function () {
 
     var req = get(_util.origin + '/' + to, function (title) {
       events.emit('after:route', { route: to, title: title });
-      cb(to, title);
+      cb ? cb(to, title) : router.navigate(to);
+
+      // Update state
+      pushRoute(to, title);
     });
   }
 
@@ -356,7 +357,8 @@ var link = exports.link = {
     return origin === getOrigin(parseURL(href));
   },
   isHash: function isHash(href) {
-    return href.match(/^#/) ? true : false;
+    return (/#/.test(href)
+    );
   },
   isSameURL: function isSameURL(href) {
     return window.location.pathname === parseURL(href).pathname;
@@ -372,7 +374,7 @@ var saveScrollPosition = exports.saveScrollPosition = function saveScrollPositio
 };
 
 var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
-  var scrollTop = history.state.scrollTop;
+  var scrollTop = history.state ? history.state.scrollTop : undefined;
   if (history.state && scrollTop !== undefined) {
     window.scrollTo(0, scrollTop);
     return scrollTop;

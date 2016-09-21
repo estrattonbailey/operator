@@ -72,6 +72,7 @@ export default (options = {}) => {
       !link.isSameOrigin(href)
       || a.getAttribute('rel') === 'external'
       || matches(e, route)
+      || link.isHash(href)
     ){ return }
 
     e.preventDefault()
@@ -82,33 +83,25 @@ export default (options = {}) => {
 
     saveScrollPosition()
 
-    go(`${origin}/${route}`, (to, title) => {
-      router.navigate(to)
-
-      // Update state
-      pushRoute(to, title)
-    })
+    go(`${origin}/${route}`, to => router.navigate(to))
   })
 
   window.onpopstate = e => {
     let to = e.target.location.href
+
+    if (link.isHash(to)){ return }
 
     if (matches(e, to)){ 
       window.location.reload()
       return 
     }
 
-    go(to, (loc, title) => {
-      /**
-       * Popstate bypasses router, so we 
-       * need to tell it where we went to
-       * without pushing state
-       */
-      router.resolve(loc)
-
-      // Update state
-      pushRoute(loc, title)
-    })
+    /**
+     * Popstate bypasses router, so we 
+     * need to tell it where we went to
+     * without pushing state
+     */
+    go(to, loc => router.resolve(loc))
   }
 
   if ('scrollRestoration' in history){
@@ -133,7 +126,7 @@ export default (options = {}) => {
     })
   }
 
-  function go(route, cb = () => {}){
+  function go(route, cb = null){
     let to = sanitize(route)
 
     events.emit('before:route', {route: to})
@@ -142,7 +135,10 @@ export default (options = {}) => {
 
     let req = get(`${origin}/${to}`, title => {
       events.emit('after:route', {route: to, title})
-      cb(to, title)
+      cb ? cb(to, title) : router.navigate(to)
+      
+      // Update state
+      pushRoute(to, title)
     })
   }
 
