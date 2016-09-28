@@ -211,8 +211,6 @@ var _tarry = require('tarry.js');
 
 var _util = require('./util');
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 /**
  * Init new native parser
  */
@@ -234,31 +232,47 @@ var parseResponse = function parseResponse(html) {
  * @param {object} root DOM node containing new markup via AJAX
  * @param {...object} sources Other DOM nodes to scrape script tags from 
  */
-var evalScripts = function evalScripts(root) {
-  for (var _len = arguments.length, sources = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    sources[_key - 1] = arguments[_key];
-  }
+var evalScripts = function evalScripts(source) {
+  var root = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
-  var tags = sources.reduce(function (prev, curr) {
-    prev.push.apply(prev, _toConsumableArray(Array.prototype.slice.call(curr.getElementsByTagName('script'))));
-    return prev;
-  }, []);
+  var errors = [];
+  var scripts = Array.prototype.slice.call(source.getElementsByTagName('script'));
+  var existing = root ? Array.prototype.slice.call(root.getElementsByTagName('script')) : [];
 
-  tags.push.apply(tags, _toConsumableArray(Array.prototype.slice.call(root.getElementsByTagName('script'))));
+  var dupe = function dupe(s) {
+    return existing.filter(function (e) {
+      return s.innerHTML === e.innerHTML && s.src === e.src;
+    }).length > 0 ? true : false;
+  };
 
-  tags.forEach(function (t) {
-    var s = document.createElement('script');[].forEach.call(t.attributes, function (a) {
-      s.setAttribute(a.name, a.value);
-    });
+  scripts.length > 0 && scripts.forEach(function (t) {
+    var s = t.cloneNode(true);
 
-    s.innerHTML = t.innerHTML;
+    if (dupe(s)) return;
+
+    s.setAttribute('data-ajaxed', 'true');
 
     try {
-      root.replaceChild(s, t);
+      eval(s.innerHTML);
     } catch (e) {
-      root.insertBefore(s, root.children[0]);
+      errors.push(e);
+    }
+
+    try {
+      root ? root.insertBefore(s, root.children[0]) : source.replaceChild(s, t);
+    } catch (e) {
+      errors.push(e);
+      document.head.insertBefore(s, document.head.children[0]);
     }
   });
+
+  if (errors.length > 0) {
+    console.groupCollapsed('operator.js');
+    errors.forEach(function (e) {
+      return console.log(e);
+    });
+    console.groupEnd();
+  }
 };
 
 /**
@@ -299,7 +313,8 @@ exports.default = function (root, duration, events) {
     var render = (0, _tarry.tarry)(function () {
       main.innerHTML = dom.querySelector(root).innerHTML;
       cb(title, main);
-      evalScripts(main, dom.head);
+      evalScripts(main);
+      evalScripts(dom.head, document.head);
       (0, _util.restoreScrollPos)();
     }, duration);
 
