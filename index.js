@@ -53,7 +53,8 @@ export default (options = {}) => {
     ...events,
     stop(){ state.paused = true },
     start(){ state.paused = false },
-    go
+    go,
+    push
   }, {
     getState: {
       value: () => state._state
@@ -114,18 +115,6 @@ export default (options = {}) => {
     window.onbeforeunload = saveScrollPosition 
   }
 
-  function get(route, cb){
-    return nanoajax.ajax({ 
-      method: 'GET', 
-      url: route 
-    }, (status, res, req) => {
-      if (req.status < 200 || req.status > 300 && req.status !== 304){
-        return window.location = `${origin}/${state._state.prev.route}`
-      }
-      render(req.response, cb) 
-    })
-  }
-
   function go(route, cb = null){
     let to = sanitize(route)
 
@@ -139,6 +128,22 @@ export default (options = {}) => {
       
       // Update state
       pushRoute(to, title)
+    })
+  }
+
+  function push(route = state.route){
+    router.navigate(route)
+  }
+
+  function get(route, cb){
+    return nanoajax.ajax({ 
+      method: 'GET', 
+      url: route 
+    }, (status, res, req) => {
+      if (req.status < 200 || req.status > 300 && req.status !== 304){
+        return window.location = `${origin}/${state._state.prev.route}`
+      }
+      render(req.response, cb) 
     })
   }
 

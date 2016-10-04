@@ -114,6 +114,15 @@ operator.go('/products', (route, title) => {
 })
 ```
 
+### .push(route)
+Update History and set a new active URL, but don't fetch any data. Useful for manual route manipulation relating to UI changes.
+```javascript
+operator.push('/products/lightbox-open')
+
+// or for hash
+operator.push('#anchor')
+```
+
 ### .getState()
 Returns an object with the current route and title values.
 ```javascript

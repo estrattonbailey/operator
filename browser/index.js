@@ -78,7 +78,8 @@ exports.default = function () {
       state.paused = false;
     },
 
-    go: go
+    go: go,
+    push: push
   }), {
     getState: {
       value: function value() {
@@ -144,18 +145,6 @@ exports.default = function () {
     window.onbeforeunload = _util.saveScrollPosition;
   }
 
-  function get(route, cb) {
-    return _nanoajax2.default.ajax({
-      method: 'GET',
-      url: route
-    }, function (status, res, req) {
-      if (req.status < 200 || req.status > 300 && req.status !== 304) {
-        return window.location = _util.origin + '/' + state._state.prev.route;
-      }
-      render(req.response, cb);
-    });
-  }
-
   function go(route) {
     var cb = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
 
@@ -173,6 +162,24 @@ exports.default = function () {
 
       // Update state
       pushRoute(to, title);
+    });
+  }
+
+  function push() {
+    var route = arguments.length <= 0 || arguments[0] === undefined ? state.route : arguments[0];
+
+    router.navigate(route);
+  }
+
+  function get(route, cb) {
+    return _nanoajax2.default.ajax({
+      method: 'GET',
+      url: route
+    }, function (status, res, req) {
+      if (req.status < 200 || req.status > 300 && req.status !== 304) {
+        return window.location = _util.origin + '/' + state._state.prev.route;
+      }
+      render(req.response, cb);
     });
   }
 
