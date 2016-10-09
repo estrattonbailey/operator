@@ -96,8 +96,6 @@ export default (options = {}) => {
       return 
     }
 
-    console.log('Passed:',to)
-
     /**
      * Popstate bypasses router, so we 
      * need to tell it where we went to
