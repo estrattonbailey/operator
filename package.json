@@ -5,7 +5,7 @@
   "main": "index.js",
   "jsnext:main": "index.js",
   "scripts": {
-    "build": "mkdir -p browser && browserify index.js --standalone operator > browser/index.js",
+    "build": "mkdir -p browser && browserify index.js --standalone operator -p [minifyify --no-map] > browser/index.js",
     "size": "bundle-size ./browser/index.js",
     "test": "ava test -v"
   },
@@ -56,6 +56,6 @@
     "loop.js": "0.0.1",
     "nanoajax": "^0.4.3",
     "navigo": "^2.2.0",
-    "tarry.js": "0.0.1"
+    "tarry.js": "^1.0.0"
   }
 }

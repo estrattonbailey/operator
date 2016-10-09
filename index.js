@@ -90,12 +90,13 @@ export default (options = {}) => {
   window.onpopstate = e => {
     let to = e.target.location.href
 
-    if (link.isHash(to)){ return }
-
     if (matches(e, to)){ 
+      if (link.isHash(to)){ return }
       window.location.reload()
       return 
     }
+
+    console.log('Passed:',to)
 
     /**
      * Popstate bypasses router, so we 
@@ -123,16 +124,19 @@ export default (options = {}) => {
     if (state.paused){ return }
 
     let req = get(`${origin}/${to}`, title => {
-      events.emit('after:route', {route: to, title})
       cb ? cb(to, title) : router.navigate(to)
       
       // Update state
       pushRoute(to, title)
+
+      events.emit('after:route', {route: to, title})
     })
   }
 
-  function push(route = state.route){
-    router.navigate(route)
+  function push(loc = state.route, title = null){
+    router.navigate(loc)
+    state.route = loc
+    title ? state.title = title : null
   }
 
   function get(route, cb){
