@@ -82,9 +82,7 @@ export default (options = {}) => {
       link.isSameURL(href)
     ){ return }
 
-    saveScrollPosition()
-
-    go(`${origin}/${route}`, to => router.navigate(to))
+    go(`${origin}/${route}`)
   })
 
   window.onpopstate = e => {
@@ -101,7 +99,7 @@ export default (options = {}) => {
      * need to tell it where we went to
      * without pushing state
      */
-    go(to, loc => router.resolve(loc))
+    go(to, null, true)
   }
 
   if ('scrollRestoration' in history){
@@ -114,20 +112,36 @@ export default (options = {}) => {
     window.onbeforeunload = saveScrollPosition 
   }
 
-  function go(route, cb = null){
+  /**
+   * @param {string} route
+   * @param {function} cb 
+   * @param {boolean} resolve Use navigo.resolve(), bypass navigo.navigate()
+   *
+   * Popstate changes the URL for us, so if we were to 
+   * router.navigate() to the previous location, it would push
+   * a duplicate route to history and we would create a loop.
+   *
+   * router.resolve() let's Navigo know we've moved, without
+   * altering history.
+   */
+  function go(route, cb = null, resolve){
     let to = sanitize(route)
+
+    resolve ? null : saveScrollPosition()
 
     events.emit('before:route', {route: to})
 
     if (state.paused){ return }
 
     let req = get(`${origin}/${to}`, title => {
-      cb ? cb(to, title) : router.navigate(to)
+      resolve ? router.resolve(to) : router.navigate(to)
       
       // Update state
       pushRoute(to, title)
 
       events.emit('after:route', {route: to, title})
+
+      cb ? cb(to, title) : null
     })
   }
 
