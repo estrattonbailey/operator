@@ -72,6 +72,7 @@ export default (options = {}) => {
     if (
       !link.isSameOrigin(href)
       || a.getAttribute('rel') === 'external'
+      || a.classList.contains('no-ajax')
       || matches(e, route)
       || link.isHash(href)
     ){ return }
