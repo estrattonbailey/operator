@@ -52,6 +52,7 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.16.0",
     "delegate": "^3.0.1",
     "loop.js": "0.0.1",
     "nanoajax": "^0.4.3",
