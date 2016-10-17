@@ -61,7 +61,7 @@ export default (options = {}) => {
     }
   })
 
-  state.route = window.location.pathname
+  state.route = `${window.location.pathname}${window.location.search}`
   state.title = document.title 
 
   delegate(document, 'a', 'click', (e) => {
