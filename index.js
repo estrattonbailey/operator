@@ -3,6 +3,7 @@ import delegate from 'delegate'
 import nanoajax from 'nanoajax'
 import navigo from 'navigo'
 import { dom } from './lib/dom.js'
+import cache from 'Lib/cache'
 import { 
   origin, 
   sanitize,
