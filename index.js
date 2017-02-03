@@ -153,7 +153,14 @@ export default (options = {}) => {
   }
 
   function get(route, cb){
-    return nanoajax.ajax({ 
+    let cached;
+
+    if ( cached = cache.getItem( sanitize( route ) ) ) {
+      render(cached, cb)
+      return;
+    }
+
+     return nanoajax.ajax({ 
       method: 'GET', 
       url: route 
     }, (status, res, req) => {
