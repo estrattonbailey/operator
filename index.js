@@ -2,7 +2,8 @@ import loop from 'loop.js'
 import delegate from 'delegate'
 import nanoajax from 'nanoajax'
 import navigo from 'navigo'
-import dom from './lib/dom.js'
+import { dom } from './lib/dom.js'
+import cache from 'Lib/cache'
 import { 
   origin, 
   sanitize,
@@ -153,7 +154,14 @@ export default (options = {}) => {
   }
 
   function get(route, cb){
-    return nanoajax.ajax({ 
+    let cached;
+
+    if ( cached = cache.getItem( sanitize( route ) ) ) {
+      render(cached, cb)
+      return;
+    }
+
+     return nanoajax.ajax({ 
       method: 'GET', 
       url: route 
     }, (status, res, req) => {
