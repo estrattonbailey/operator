@@ -2,7 +2,7 @@ import loop from 'loop.js'
 import delegate from 'delegate'
 import nanoajax from 'nanoajax'
 import navigo from 'navigo'
-import dom from './lib/dom.js'
+import { dom } from './lib/dom.js'
 import { 
   origin, 
   sanitize,
