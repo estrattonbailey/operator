@@ -1,1 +1,80 @@
-'use strict';Object.defineProperty(exports,'__esModule',{value:!0});function _toConsumableArray(b){if(Array.isArray(b)){for(var c=0,d=Array(b.length);c<b.length;c++)d[c]=b[c];return d}return Array.from(b)}var history=window.history,getOrigin=function(b){return b.origin||b.protocol+'//'+b.host},origin=exports.origin=getOrigin(window.location),originRegEx=exports.originRegEx=new RegExp(origin),sanitize=exports.sanitize=function(b){var c=b.replace(originRegEx,''),d=c.match(/^\//)?c.replace(/\/{1}/,''):c;return''===d?'/':d},parseURL=exports.parseURL=function(b){var c=document.createElement('a');return c.href=b,c},link=exports.link={isSameOrigin:function isSameOrigin(b){return origin===getOrigin(parseURL(b))},isHash:function isHash(b){return /#/.test(b)},isSameURL:function isSameURL(b){return window.location.search===parseURL(b).search&&window.location.pathname===parseURL(b).pathname}},getScrollPosition=exports.getScrollPosition=function(){return window.pageYOffset||window.scrollY},saveScrollPosition=exports.saveScrollPosition=function(){return window.history.replaceState({scrollTop:getScrollPosition()},'')},restoreScrollPos=exports.restoreScrollPos=function(){var b=history.state?history.state.scrollTop:void 0;return history.state&&void 0!==b?(window.scrollTo(0,b),b):void window.scrollTo(0,0)},activeLinks=[],setActiveLinks=exports.setActiveLinks=function(b){activeLinks.forEach(function(c){return c.classList.remove('is-active')}),activeLinks.splice(0,activeLinks.length),activeLinks.push.apply(activeLinks,_toConsumableArray(Array.prototype.slice.call(document.querySelectorAll('[href$="'+b+'"]')))),activeLinks.forEach(function(c){return c.classList.add('is-active')})};
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var history = window.history;
+
+var getOrigin = function getOrigin(url) {
+  return url.origin || url.protocol + '//' + url.host;
+};
+
+var origin = exports.origin = getOrigin(window.location);
+
+var originRegEx = exports.originRegEx = new RegExp(origin);
+
+/**
+ * Replace site origin, if present,
+ * remove leading slash, if present.
+ *
+ * @param {string} url Raw URL to parse
+ * @return {string} URL sans origin and sans leading comma
+ */
+var sanitize = exports.sanitize = function sanitize(url) {
+  var route = url.replace(originRegEx, '');
+  var clean = route.match(/^\//) ? route.replace(/\/{1}/, '') : route; // remove /
+  return clean === '' ? '/' : clean;
+};
+
+var parseURL = exports.parseURL = function parseURL(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a;
+};
+
+var link = exports.link = {
+  isSameOrigin: function isSameOrigin(href) {
+    return origin === getOrigin(parseURL(href));
+  },
+  isHash: function isHash(href) {
+    return (/#/.test(href)
+    );
+  },
+  isSameURL: function isSameURL(href) {
+    return window.location.search === parseURL(href).search && window.location.pathname === parseURL(href).pathname;
+  }
+};
+
+var getScrollPosition = exports.getScrollPosition = function getScrollPosition() {
+  return window.pageYOffset || window.scrollY;
+};
+
+var saveScrollPosition = exports.saveScrollPosition = function saveScrollPosition() {
+  return window.history.replaceState({ scrollTop: getScrollPosition() }, '');
+};
+
+var restoreScrollPos = exports.restoreScrollPos = function restoreScrollPos() {
+  var scrollTop = history.state ? history.state.scrollTop : undefined;
+
+  if (history.state && scrollTop !== undefined) {
+    window.scrollTo(0, scrollTop);
+    return scrollTop;
+  } else {
+    window.scrollTo(0, 0);
+  }
+};
+
+var activeLinks = [];
+var setActiveLinks = exports.setActiveLinks = function setActiveLinks(route) {
+  activeLinks.forEach(function (a) {
+    return a.classList.remove('is-active');
+  });
+  activeLinks.splice(0, activeLinks.length);
+  activeLinks.push.apply(activeLinks, _toConsumableArray(Array.prototype.slice.call(document.querySelectorAll('[href$="' + route + '"]'))));
+  activeLinks.forEach(function (a) {
+    return a.classList.add('is-active');
+  });
+};
