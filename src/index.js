@@ -1,18 +1,19 @@
 import loop from 'loop.js'
 import delegate from 'delegate'
 import nanoajax from 'nanoajax'
-import navigo from 'navigo'
-import dom from './lib/dom.js'
-import { 
-  origin, 
+import Navigo from 'navigo'
+import dom from './dom'
+import {
+  origin,
   sanitize,
   saveScrollPosition,
-  scrollToLocation,
   link,
   setActiveLinks
-} from './lib/util.js'
+} from './util'
 
-const router = new navigo(origin)
+const history = window.history
+
+const router = new Navigo(origin)
 
 const state = {
   _state: {
@@ -20,21 +21,21 @@ const state = {
     title: '',
     prev: {
       route: '/',
-      title: '',
+      title: ''
     }
   },
-  get route(){
+  get route () {
     return this._state.route
   },
-  set route(loc){
+  set route (loc) {
     this._state.prev.route = this.route
     this._state.route = loc
     setActiveLinks(loc)
   },
-  get title(){
+  get title () {
     return this._state.title
   },
-  set title(val){
+  set title (val) {
     this._state.prev.title = this.title
     this._state.title = val
     document.title = val
@@ -51,8 +52,12 @@ export default (options = {}) => {
 
   const instance = Object.create({
     ...events,
-    stop(){ state.paused = true },
-    start(){ state.paused = false },
+    stop () {
+      state.paused = true
+    },
+    start () {
+      state.paused = false
+    },
     go,
     push
   }, {
@@ -61,8 +66,8 @@ export default (options = {}) => {
     }
   })
 
-  state.route = `${window.location.pathname}${window.location.search}`
-  state.title = document.title 
+  state.route = window.location.pathname + window.location.search
+  state.title = document.title
 
   delegate(document, 'a', 'click', (e) => {
     let a = e.delegateTarget
@@ -70,115 +75,126 @@ export default (options = {}) => {
     let route = sanitize(href)
 
     if (
-      !link.isSameOrigin(href)
-      || a.getAttribute('rel') === 'external'
-      || a.classList.contains('no-ajax')
-      || matches(e, route)
-      || link.isHash(href)
-    ){ return }
+      !link.isSameOrigin(href) ||
+      a.getAttribute('rel') === 'external' ||
+      a.classList.contains('no-ajax') ||
+      matches(e, route) ||
+      link.isHash(href)
+    ) { return }
 
     e.preventDefault()
 
     if (
       link.isSameURL(href)
-    ){ return }
+    ) { return }
 
     go(`${origin}/${route}`)
+
+    return false
   })
 
-  window.onpopstate = e => {
+  window.onpopstate = (e) => {
     let to = e.target.location.href
 
-    if (matches(e, to)){ 
-      if (link.isHash(to)){ return }
+    if (matches(e, to)) {
+      if (link.isHash(to)) { return }
       window.location.reload()
-      return 
+      return
     }
 
     /**
-     * Popstate bypasses router, so we 
+     * Popstate bypasses router, so we
      * need to tell it where we went to
      * without pushing state
      */
     go(to, null, true)
   }
 
-  if ('scrollRestoration' in history){
+  if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual'
 
-    if (history.state && history.state.scrollTop !== undefined){
+    if (history.state && history.state.scrollTop !== undefined) {
       window.scrollTo(0, history.state.scrollTop)
     }
 
-    window.onbeforeunload = saveScrollPosition 
+    window.onbeforeunload = saveScrollPosition
   }
 
   /**
    * @param {string} route
-   * @param {function} cb 
-   * @param {boolean} resolve Use navigo.resolve(), bypass navigo.navigate()
+   * @param {function} cb
+   * @param {boolean} resolve Use Navigo.resolve(), bypass Navigo.navigate()
    *
-   * Popstate changes the URL for us, so if we were to 
+   * Popstate changes the URL for us, so if we were to
    * router.navigate() to the previous location, it would push
    * a duplicate route to history and we would create a loop.
    *
    * router.resolve() let's Navigo know we've moved, without
    * altering history.
    */
-  function go(route, cb = null, resolve){
+  function go (route, cb = null, resolve) {
     let to = sanitize(route)
 
     resolve ? null : saveScrollPosition()
 
-    events.emit('before:route', {route: to})
+    events.emit('before:route', { route: to })
 
-    if (state.paused){ return }
+    if (state.paused) { return }
 
-    let req = get(`${origin}/${to}`, title => {
+    get(`${origin}/${to}`, (title) => {
       resolve ? router.resolve(to) : router.navigate(to)
-      
+
       // Update state
       pushRoute(to, title)
 
-      events.emit('after:route', {route: to, title})
+      events.emit('after:route', {
+        route: to,
+        title
+      })
 
       cb ? cb(to, title) : null
     })
   }
 
-  function push(loc = state.route, title = null){
+  function push (loc = state.route, title = null) {
     router.navigate(loc)
     state.route = loc
     title ? state.title = title : null
   }
 
-  function get(route, cb){
-    return nanoajax.ajax({ 
-      method: 'GET', 
-      url: route 
+  function get (route, cb) {
+    return nanoajax.ajax({
+      method: 'GET',
+      url: route
     }, (status, res, req) => {
-      if (req.status < 200 || req.status > 300 && req.status !== 304){
-        return window.location = `${origin}/${state._state.prev.route}`
+      if (req.status < 200 || req.status > 300 && req.status !== 304) {
+        window.location = `${origin}/${state._state.prev.route}`
+        return
       }
-      render(req.response, cb) 
+      render(req.response, cb)
     })
   }
 
-  function pushRoute(loc, title = null){
+  function pushRoute (loc, title = null) {
     state.route = loc
     title ? state.title = title : null
   }
 
-  function matches(event, route){
-    return ignore.filter(t => {
-      if (Array.isArray(t)){
+  function matches (event, route) {
+    return ignore.filter((t) => {
+      if (Array.isArray(t)) {
         let res = t[1](route)
-        if (res){ events.emit(t[0], {route, event}) }
+        if (res) {
+          events.emit(t[0], {
+            route,
+            event
+          })
+        }
         return res
       } else {
-        return t(route) 
+        return t(route)
       }
-    }).length > 0 ? true : false
+    }).length > 0
   }
 
   return instance
