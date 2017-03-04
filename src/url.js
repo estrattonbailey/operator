@@ -33,26 +33,3 @@ export const link = {
       window.location.pathname === parseURL(href).pathname
   }
 }
-
-export const getScrollPosition = () => window.pageYOffset || window.scrollY
-
-export const saveScrollPosition = () => window.history.replaceState({ scrollTop: getScrollPosition() }, '')
-
-export const restoreScrollPos = () => {
-  let scrollTop = history.state ? history.state.scrollTop : undefined
-
-  if (history.state && scrollTop !== undefined) {
-    window.scrollTo(0, scrollTop)
-    return scrollTop
-  } else {
-    window.scrollTo(0, 0)
-  }
-}
-
-const activeLinks = []
-export const setActiveLinks = (route) => {
-  activeLinks.forEach((a) => a.classList.remove('is-active'))
-  activeLinks.splice(0, activeLinks.length)
-  activeLinks.push(...Array.prototype.slice.call(document.querySelectorAll(`[href$="${route}"]`)))
-  activeLinks.forEach((a) => a.classList.add('is-active'))
-}
