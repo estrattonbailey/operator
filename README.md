@@ -1,7 +1,11 @@
 # Operator [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
-An AJAX + routing library that transforms a normal site into a Single Page Application (SPA). 
+An AJAX + routing library that transforms a normal site into a single page application (SPA). It's light, fast, and flexible.
 
-**4.2kb gzipped.**
+### Features
+1. Drop-in solution, simple config
+2. Easily style transitions using CSS
+3. Visited pages are cached by default for repeat views
+4. Lightweight: **~4kb gzipped**
 
 ## Install
 ```javascript
@@ -14,7 +18,7 @@ import operator from 'operator.js'
 
 const app = operator({
   root: '#root',
-  duration: 200, // transition duration
+  duration: 200,
   ignore: [
     route => /logout/.test(route)
   ]
@@ -42,7 +46,11 @@ const app = operator({
 ```
 
 #### ignore (optional)
-An `array` of functions to test against the route. **Functions must return booleans.** If a test returns true, the route is followed via normal page load instead of AJAX. In the below example, routes matching `products` will be ignored:
+An `array` of functions to test against the route. **Functions must return true/false.**
+- if a test returns `true`, the route is followed via normal page load instead of AJAX
+- return `false` to continue with the AJAX experience
+
+In the below example, routes matching `products` will be ignored:
 ```javascript
 const app = operator({
   root: '.js-root-element',
@@ -51,7 +59,7 @@ const app = operator({
   ]
 })
 ```
-Optionally, you can pass a sub-array containing a `name` value *and* a test function. If the test returns true, an event (`name`) is emitted with an object as payload. The payload object contains the native DOM event object returned from [delegate](https://github.com/zenorocha/delegate) and the matched route:
+Optionally, you can pass a sub-array containing a `name` value *and* a test function. If the test returns `true`, an event (`name`) is emitted with an object as payload. The payload object contains the native DOM event object returned from [delegate](https://github.com/zenorocha/delegate) and the matched route:
 ```javascript
 const app = operator({
   root: '#root',
@@ -74,42 +82,58 @@ import operator from 'operator.js'
 ### .on(event, callback)
 Operator emits the following events:
 
-#### before:route
+#### route:before
 Before the route is resolved and the page loaded. The callback recieves the route to be resolved.
 ```javascript
-operator.on('before:route', ({ route }) => {
+operator.on('route:before', ({ route }) => {
   // do stuff  
 })
 ```
 
-#### after:route
+#### route:after
 After the route is resolved and the page loaded. The callback recieves the new route and page title.
 ```javascript
-operator.on('after:route', ({ route, title }) => {
+operator.on('route:after', ({ route, title }) => {
   // do stuff  
 })
 ```
 
-#### before:transition
-Before the page starts its transition. The callback recieves no params.
+#### transition:before
+Before the page starts its transition. The callback recieves an object with the new route.
 ```javascript
-operator.on('before:transition', () => {
+operator.on('transition:before', ({ route }) => {
   // do stuff  
 })
 ```
-
-#### after:transition
-After the page completes its transition. The callback recieves no params.
+This is handy for route specific transitions:
 ```javascript
-operator.on('after:transition', () => {
+operator.on('transition:before', ({ route }) => {
+  if (/products/.test(route)) {
+    document.documentElement.classList.add('is-products-transition')
+  }
+})
+```
+
+#### transition:after
+After the page completes its transition (called after the `duration` you specified on the Operator instance). The callback recieves an object with the new route.
+```javascript
+operator.on('transition:after', ({ route }) => {
   // do stuff  
+})
+```
+Use this to remove route specific transitions:
+```javascript
+operator.on('transition:before', ({ route }) => {
+  if (/products/.test(route)) {
+    document.documentElement.classList.remove('is-products-transition')
+  }
 })
 ```
 
 ### .go(route, callback)
 Navigate to a given route.
 ```javascript
-operator.go('/products', (route, title) => {
+operator.go('/products', ({ route, title }) => {
   // do stuff
 })
 ```
@@ -143,7 +167,7 @@ const app = operator({
   ]
 })
 
-app.on('hash', ({event}) => {
+app.on('hash', ({ event }) => {
   event.preventDefault()
   let hash = event.delegateTarget.getAttribute('href')
   jump(hash, { duration: 500 })
@@ -160,7 +184,7 @@ const app = operator({
   ]
 })
 
-app.on('products', ({event}) => {
+app.on('products', ({ event }) => {
   event.preventDefault()
   app.go('/')
 })
@@ -172,6 +196,7 @@ app.on('products', ({event}) => {
 - [navigo:](https://github.com/krasimir/navigo) An ajax library you need a microscope to see. by [@krasimir](https://github.com/krasimir)
 - [loop.js:](https://github.com/callmecavs/loop.js) Part of a knot. Loop is a bare-bones pub/sub style event emitter. by [@estrattonbailey](https://github.com/estrattonbailey)
 - [tarry.js:](https://github.com/estrattonbailey/tarry.js) A really tiny sequencing library with support for delays. by [@estrattonbailey](https://github.com/estrattonbailey)
+- [scroll-restoration:](https://github.com/estrattonbailey/scroll-restoration) A tiny scroll management library using native DOM APIs. by [@estrattonbailey](https://github.com/estrattonbailey)
 
 ## Related Projects
 - [micromanager](https://github.com/estrattonbailey/micromanager) Route-managed client-side binding controller in ES6. Useful for preventing double-bindings between pages. by [@estrattonbailey](https://github.com/estrattonbailey)
