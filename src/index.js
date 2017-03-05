@@ -5,7 +5,7 @@ import { sanitize, link } from './url'
 export default ({
   root = document.body,
   duration = 0,
-  ignore = [],
+  ignore = []
 }) => {
   const operator = new Operator({ root, duration, ignore })
 
@@ -28,7 +28,7 @@ export default ({
     const ignored = operator.ignored(e, path)
     const hash = link.isHash(href)
 
-    if ( !internal || external || disabled || ignored || hash) { return }
+    if (!internal || external || disabled || ignored || hash) { return }
 
     e.preventDefault()
 

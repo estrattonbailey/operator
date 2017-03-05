@@ -1,7 +1,7 @@
 # Operator [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
 An AJAX + routing library that transforms a normal site into a Single Page Application (SPA). 
 
-**6.06kb gzipped.**
+**4.2kb gzipped.**
 
 ## Install
 ```javascript

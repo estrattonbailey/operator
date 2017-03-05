@@ -4,7 +4,7 @@ export default {
   set: (route, res) => {
     cache = {
       ...cache,
-      [route]: res,
+      [route]: res
     }
   },
   get: (route) => cache[route],

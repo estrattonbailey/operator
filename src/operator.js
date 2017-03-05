@@ -15,7 +15,7 @@ const router = new Navigo(origin)
  * Document.title
  */
 export default class Operator {
-  constructor(config) {
+  constructor (config) {
     const events = loop()
 
     this.config = config

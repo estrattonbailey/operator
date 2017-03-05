@@ -1,5 +1,3 @@
-const history = window.history
-
 const getOrigin = (url) => url.origin || url.protocol + '//' + url.host
 
 export const origin = getOrigin(window.location)

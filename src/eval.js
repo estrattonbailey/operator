@@ -8,7 +8,7 @@ export default (scope, head) => {
   const scripts = Array.prototype.slice.call(scope.getElementsByTagName('script'))
   const existing = Array.prototype.slice.call(head.getElementsByTagName('script'))
 
-  for (let i = 0; i < scripts.length; i++){
+  for (let i = 0; i < scripts.length; i++) {
     let script = scripts[i].cloneNode(true)
 
     if (isDupe(script, existing)) {
