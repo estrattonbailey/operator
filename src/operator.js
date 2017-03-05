@@ -10,10 +10,6 @@ import cache from './cache'
 
 const router = new Navigo(origin)
 
-/**
- * TODO
- * Document.title
- */
 export default class Operator {
   constructor (config) {
     const events = loop()
@@ -103,6 +99,7 @@ export default class Operator {
   }
 
   get (route, cb) {
+    console.log(origin)
     return nanoajax.ajax({
       method: 'GET',
       url: `${origin}/${route}`
