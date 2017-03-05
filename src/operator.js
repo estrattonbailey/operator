@@ -99,7 +99,6 @@ export default class Operator {
   }
 
   get (route, cb) {
-    console.log(origin)
     return nanoajax.ajax({
       method: 'GET',
       url: `${origin}/${route}`

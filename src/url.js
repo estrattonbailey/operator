@@ -1,26 +1,25 @@
-const getOrigin = (url) => url.origin || url.protocol + '//' + url.host
-
-export const origin = getOrigin(window.location)
-
-export const originRegEx = new RegExp(origin)
-
-/**
- * Replace site origin, if present,
- * remove leading slash, if present.
- *
- * @param {string} url Raw URL to parse
- * @return {string} URL sans origin and sans leading comma
- */
-export const sanitize = (url) => {
-  let route = url.replace(originRegEx, '')
-  let clean = route.match(/^\//) ? route.replace(/\/{1}/, '') : route // remove /
-  return clean === '' ? '/' : clean
+const getOrigin = (location) => {
+  const { protocol, host } = location
+  return `${protocol}//${host}`
 }
 
-export const parseURL = (url) => {
+const parseURL = (url) => {
   let a = document.createElement('a')
   a.href = url
   return a
+}
+
+export const origin = getOrigin(window.location)
+
+const originRegEx = new RegExp(origin)
+
+/**
+ * @param {string} url Raw URL to parse
+ * @return {string} URL sans origin and sans leading slash
+ */
+export const sanitize = (url) => {
+  const route = url.replace(originRegEx, '')
+  return route.match(/^\//) ? route.replace(/\/{1}/, '') : route // remove / and return
 }
 
 export const link = {
