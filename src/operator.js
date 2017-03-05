@@ -6,6 +6,7 @@ import { origin, sanitize } from './url'
 import setActiveLinks from './links'
 import render from './render'
 import state from './state'
+import cache from './cache'
 
 const router = new Navigo(origin)
 
@@ -19,6 +20,7 @@ export default class Operator {
 
     this.config = config
 
+    // create curried render function
     this.render = render(document.querySelector(config.root), config, events.emit)
 
     Object.assign(this, events)
@@ -41,6 +43,8 @@ export default class Operator {
     title ? state.title = title : null
 
     setActiveLinks(route)
+
+    document.title = title
   }
 
   /**
@@ -60,15 +64,7 @@ export default class Operator {
       return
     }
 
-    const route = sanitize(path)
-
-    if (resolve) {
-      scroll.save()
-    }
-
-    this.emit('before:route', { route })
-
-    this.get(`${origin}/${route}`, (title) => {
+    const callback = (title) => {
       const res = {
         title,
         route
@@ -82,39 +78,59 @@ export default class Operator {
 
       this.setState(res)
 
-      this.emit('after:route', res)
+      this.emit('route:after', res)
 
       if (cb) {
         cb(res)
       }
-    })
+    }
+
+    const route = sanitize(path)
+
+    if (resolve) {
+      scroll.save()
+    }
+
+    const cached = cache.get(route)
+
+    if (cached) {
+      return this.render(route, cached, callback)
+    }
+
+    this.emit('route:before', { route })
+
+    this.get(route, callback)
   }
 
   get (route, cb) {
     return nanoajax.ajax({
       method: 'GET',
-      url: route
+      url: `${origin}/${route}`
     }, (status, res, req) => {
       if (req.status < 200 || req.status > 300 && req.status !== 304) {
         window.location = `${origin}/${state.prev.route}`
         return
       }
 
-      this.render(req.response, cb)
+      cache.set(route, req.response)
+
+      this.render(route, req.response, cb)
     })
   }
 
-  push (route = null, title = null) {
+  push (route = null, title = state.title) {
     if (!route) { return }
 
     this.router.navigate(route)
     this.setState({ route, title })
   }
 
-  matches (event, route) {
+  ignored (event, route) {
     return this.config.ignore.filter((t) => {
       if (Array.isArray(t)) {
+        // matches test
         let res = t[1](route)
+        // if a match, fire listener
         if (res) {
           this.emit(t[0], {
             route,

@@ -19,12 +19,12 @@ const parseResponse = (html) => parser.parseFromString(html, 'text/html')
  * @param {string} markup New markup from AJAX response
  * @param {function} cb Optional callback
  */
-export default (page, { duration, root }, emit) => (markup, cb) => {
+export default (page, { duration, root }, emit) => (route, markup, cb) => {
   const res = parseResponse(markup)
   const title = res.title
 
   const start = tarry(() => {
-    emit('transition:before')
+    emit('transition:before', { route })
     document.documentElement.classList.add('is-transitioning')
     page.style.height = page.clientHeight + 'px'
   })
@@ -36,13 +36,12 @@ export default (page, { duration, root }, emit) => (markup, cb) => {
     scroll.restore()
   })
 
-  const removeTransitionStyles = tarry(() => {
+  const end = tarry(() => {
     cb(title)
-    document.documentElement.classList.remove('is-transitioning')
     page.style.height = ''
+    document.documentElement.classList.remove('is-transitioning')
+    emit('transition:after', { route })
   })
 
-  const end = tarry(() => emit('transition:after'))
-
-  queue(start(0), render(duration), removeTransitionStyles(0), end(duration))()
+  queue(start(0), render(duration), end(0))()
 }

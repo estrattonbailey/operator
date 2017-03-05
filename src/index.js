@@ -5,7 +5,7 @@ import { sanitize, link } from './url'
 export default ({
   root = document.body,
   duration = 0,
-  ignore = []
+  ignore = [],
 }) => {
   const operator = new Operator({ root, duration, ignore })
 
@@ -25,7 +25,7 @@ export default ({
     const internal = link.isSameOrigin(href)
     const external = anchor.getAttribute('rel') === 'external'
     const disabled = anchor.classList.contains('no-ajax')
-    const ignored = operator.matches(e, path)
+    const ignored = operator.ignored(e, path)
     const hash = link.isHash(href)
 
     if ( !internal || external || disabled || ignored || hash) { return }
@@ -43,7 +43,7 @@ export default ({
     const href = e.target.location.href
     const path = sanitize(href)
 
-    if (operator.matches(e, path)) {
+    if (operator.ignored(e, path)) {
       if (link.isHash(href)) { return }
 
       window.location.reload()
