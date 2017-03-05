@@ -1,59 +1,46 @@
 import nanoajax from 'nanoajax'
 import Navigo from 'navigo'
 import scroll from 'scroll-restoration'
-
-import render from './render'
-import setActiveLinks from './links'
-import events from './emitter'
+import loop from 'loop.js'
 import { origin, sanitize } from './url'
+import setActiveLinks from './links'
+import render from './render'
+import state from './state'
 
-const state = {
-  _state: {
-    route: '',
-    title: '',
-    prev: {
-      route: '/',
-      title: ''
-    }
-  },
-  get route () {
-    return this._state.route
-  },
-  set route (loc) {
-    this._state.prev.route = this.route
-    this._state.route = loc
-  },
-  get title () {
-    return this._state.title
-  },
-  set title (val) {
-    this._state.prev.title = this.title
-    this._state.title = val
-  }
-}
+const router = new Navigo(origin)
 
 /**
  * TODO
  * Document.title
  */
 export default class Operator {
-  constructor({ root, duration, ignore }) {
-    this.state = state
-    this.router = new Navigo(origin)
-    this.mount = render(root, duration)
-    this.ignore = ignore
+  constructor(config) {
+    const events = loop()
+
+    this.config = config
+
+    this.render = render(document.querySelector(config.root), config, events.emit)
+
+    Object.assign(this, events)
   }
 
   stop () {
-    this.state.paused = true
+    state.paused = true
   }
 
   start () {
-    this.state.paused = false
+    state.paused = false
   }
 
   getState () {
-    return this.state._state
+    return state._state
+  }
+
+  setState ({ route, title }) {
+    state.route = route
+    title ? state.title = title : null
+
+    setActiveLinks(route)
   }
 
   /**
@@ -69,37 +56,38 @@ export default class Operator {
    * altering history.
    */
   go (path, cb = null, resolve) {
+    if (state.paused) {
+      return
+    }
+
     const route = sanitize(path)
 
     if (resolve) {
       scroll.save()
     }
 
-    events.emit('before:route', { route })
-
-    if (this.state.paused) { return }
+    this.emit('before:route', { route })
 
     this.get(`${origin}/${route}`, (title) => {
-      resolve ? this.router.resolve(route) : this.router.navigate(route)
+      const res = {
+        title,
+        route
+      }
 
-      // Update state
-      this.pushRoute(route, title)
+      resolve ? (
+        router.resolve(route)
+      ) : (
+        router.navigate(route)
+      )
 
-      events.emit('after:route', {
-        route,
-        title
-      })
+      this.setState(res)
 
-      cb ? cb(route, title) : null
+      this.emit('after:route', res)
+
+      if (cb) {
+        cb(res)
+      }
     })
-  }
-
-  push (loc = null, title = null) {
-    if (!loc) { return }
-
-    this.router.navigate(loc)
-
-    this.pushRoute(loc, title)
   }
 
   get (route, cb) {
@@ -108,26 +96,27 @@ export default class Operator {
       url: route
     }, (status, res, req) => {
       if (req.status < 200 || req.status > 300 && req.status !== 304) {
-        window.location = `${origin}/${this.state._state.prev.route}`
+        window.location = `${origin}/${state.prev.route}`
         return
       }
-      this.mount(req.response, cb)
+
+      this.render(req.response, cb)
     })
   }
 
-  pushRoute (loc, title = null) {
-    this.state.route = loc
-    title ? this.state.title = title : null
+  push (route = null, title = null) {
+    if (!route) { return }
 
-    setActiveLinks(this.state.route)
+    this.router.navigate(route)
+    this.setState({ route, title })
   }
 
   matches (event, route) {
-    return this.ignore.filter((t) => {
+    return this.config.ignore.filter((t) => {
       if (Array.isArray(t)) {
         let res = t[1](route)
         if (res) {
-          events.emit(t[0], {
+          this.emit(t[0], {
             route,
             event
           })

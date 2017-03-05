@@ -1,62 +1,48 @@
 import { tarry, queue } from 'tarry.js'
 import scroll from 'scroll-restoration'
-import events from './emitter'
 import evalScripts from './eval.js'
 
-/**
- * Init new native parser
- */
 const parser = new window.DOMParser()
 
 /**
- * Get the target of the ajax req
  * @param {string} html Stringified HTML
  * @return {object} DOM node, #page
  */
 const parseResponse = (html) => parser.parseFromString(html, 'text/html')
 
 /**
- * Helper to smoothly swap old
- * markup with new markup
+ * @param {object} page Root application DOM node
+ * @param {object} config Duration and root node selector
+ * @param {function} emit Emitter function from Operator instance
+ * @return {function}
  *
- * @param {object} markup New node to append to DOM
+ * @param {string} markup New markup from AJAX response
+ * @param {function} cb Optional callback
  */
-export default (root, duration) => (markup, cb) => {
+export default (page, { duration, root }, emit) => (markup, cb) => {
   const res = parseResponse(markup)
   const title = res.title
 
-  const page = document.querySelector(root)
+  const start = tarry(() => {
+    emit('transition:before')
+    document.documentElement.classList.add('is-transitioning')
+    page.style.height = page.clientHeight + 'px'
+  })
 
-  // TODO does this need a duration
-  const start = tarry(
-    () => {
-      events.emit('before:transition')
-      document.documentElement.classList.add('is-transitioning')
-      page.style.height = page.clientHeight + 'px'
-    }
-  , duration)
+  const render = tarry(() => {
+    page.innerHTML = res.querySelector(root).innerHTML
+    evalScripts(page, document.head)
+    evalScripts(res.head, document.head)
+    scroll.restore()
+  })
 
-  const render = tarry(
-    () => {
-      page.innerHTML = res.querySelector(root).innerHTML
-      cb(title, page)
-      evalScripts(page)
-      evalScripts(res.head, document.head)
-      scroll.restore()
-    }
-  , duration)
+  const removeTransitionStyles = tarry(() => {
+    cb(title)
+    document.documentElement.classList.remove('is-transitioning')
+    page.style.height = ''
+  })
 
-  // TODO does this need duration either
-  const removeTransitionStyles = tarry(
-    () => {
-      document.documentElement.classList.remove('is-transitioning')
-      page.style.height = ''
-    }
-  , duration)
+  const end = tarry(() => emit('transition:after'))
 
-  const signalEnd = tarry(
-    () => events.emit('after:transition')
-  , duration)
-
-  queue(start, render, removeTransitionStyles, signalEnd)()
+  queue(start(0), render(duration), removeTransitionStyles(0), end(duration))()
 }

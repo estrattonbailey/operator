@@ -12,17 +12,16 @@ export default ({
   /**
    * Start up
    */
-  operator.pushRoute(
-    window.location.pathname + window.location.search,
-    document.title
-  )
+  operator.setState({
+    route: window.location.pathname + window.location.search,
+    title: document.title
+  })
 
   delegate(document, 'a', 'click', (e) => {
     const anchor = e.delegateTarget
     const href = anchor.getAttribute('href') || '/'
     const path = sanitize(href)
 
-    e.preventDefault()
     const internal = link.isSameOrigin(href)
     const external = anchor.getAttribute('rel') === 'external'
     const disabled = anchor.classList.contains('no-ajax')
