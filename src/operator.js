@@ -44,7 +44,7 @@ export default class Operator {
   }
 
   /**
-   * @param {string} route
+   * @param {string} href
    * @param {function} cb
    * @param {boolean} resolve Use Navigo.resolve(), bypass Navigo.navigate()
    *
@@ -55,7 +55,7 @@ export default class Operator {
    * router.resolve() let's Navigo know we've moved, without
    * altering history.
    */
-  go (path, cb = null, resolve) {
+  go (href, cb = null, resolve) {
     if (state.paused) {
       return
     }
@@ -81,7 +81,7 @@ export default class Operator {
       }
     }
 
-    const route = sanitize(path)
+    const route = sanitize(href)
 
     if (resolve) {
       scroll.save()
@@ -121,7 +121,9 @@ export default class Operator {
     this.setState({ route, title })
   }
 
-  ignored (event, route) {
+  ignored (event, href) {
+    const route = sanitize(href)
+
     return this.config.ignore.filter((t) => {
       if (Array.isArray(t)) {
         // matches test
