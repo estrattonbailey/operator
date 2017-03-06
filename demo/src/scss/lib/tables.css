@@ -1,0 +1,26 @@
+
+.table--fixed { table-layout: fixed }
+.table__row-header { display: table-header-group }
+.table__row-footer { display: table-footer-group }
+.table__row-group { display: table-row-group }
+.table__row { display: table-row }
+.table__cell { display: table-cell }
+
+table,
+.table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: table;
+  width: 100%;
+}
+td,
+th {
+  display: table-cell;
+  border-bottom: 1px solid #000;
+  padding: .66em 1.33em;
+}
+th {
+  font-weight: 100;
+  text-align: left;
+}
+
