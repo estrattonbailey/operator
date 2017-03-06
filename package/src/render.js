@@ -31,8 +31,7 @@ export default (page, { duration, root }, emit) => (route, markup, cb) => {
 
   const render = tarry(() => {
     page.innerHTML = res.querySelector(root).innerHTML
-    evalScripts(page, document.head)
-    evalScripts(res.head, document.head)
+    evalScripts(res, document)
     scroll.restore()
   })
 
