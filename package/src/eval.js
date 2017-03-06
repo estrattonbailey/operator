@@ -14,21 +14,18 @@ export default (newDom, existingDom) => {
 
   for (let i = 0; i < scripts.length; i++) {
     if (isDupe(scripts[i], existing)) {
-      break
+      continue
     }
 
+    const s = document.createElement('script')
     const src = scripts[i].attributes.getNamedItem('src')
 
     if (src) {
-      const s = document.createElement('script')
       s.src = src.value
-      document.body.appendChild(s)
     } else {
-      try {
-        eval(scripts[i].innerHTML) // eslint-disable-line 
-      } catch (e) {
-        console.warn(e)
-      }
+      s.innerHTML = scripts[i].innerHTML
     }
+
+    document.body.appendChild(s)
   }
 }
