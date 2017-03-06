@@ -121,7 +121,7 @@ export default class Operator {
     this.setState({ route, title })
   }
 
-  handlers (event = null, href = state.route) {
+  validate (event = null, href = state.route) {
     const route = sanitize(href)
 
     return this.config.handlers.filter((t) => {

@@ -19,7 +19,7 @@ import operator from 'operator.js'
 const app = operator({
   root: '#root',
   duration: 200,
-  ignore: [
+  handlers: [
     route => /logout/.test(route)
   ]
 })
@@ -45,16 +45,16 @@ const app = operator({
 })
 ```
 
-#### ignore (optional)
+#### handlers (optional)
 An `array` of functions to test against the route. **Functions must return true/false.**
 - if a test returns `true`, the route is followed via normal page load instead of AJAX
 - return `false` to continue with the AJAX experience
 
-In the below example, routes matching `products` will be ignored:
+In the below example, routes matching `products` will be ignored and the page will perform a full load of the next route:
 ```javascript
 const app = operator({
   root: '.js-root-element',
-  ignore: [
+  handlers: [
     route => /products/.test(route)
   ]
 })
@@ -63,7 +63,7 @@ Optionally, you can pass a sub-array containing a `name` value *and* a test func
 ```javascript
 const app = operator({
   root: '#root',
-  ignore: [
+  handlers: [
     ['products', route => /products/.test(route)]
   ]
 })
@@ -156,13 +156,13 @@ operator.getState() // { route: '/products', title: 'Products' }
 ## Common Use Cases
 
 #### Anchors
-By default, operator will ignore anchors and let native browser behavior take over. You can, however, intercept these hash events using the `ignore` option. The below example uses to [jump.js](https://github.com/callmecavs/jump.js) to smooth-scroll to the anchor target:
+By default, operator will ignore anchors and let native browser behavior take over. You can, however, intercept these hash events using the `handlers` option. The below example uses to [jump.js](https://github.com/callmecavs/jump.js) to smooth-scroll to the anchor target:
 ```javascript
 import jump from 'jump.js'
 
 const app = operator({
   root: '#root',
-  ignore: [
+  handlers: [
     ['hash', path => /#/.test(path)]
   ]
 })
@@ -175,11 +175,11 @@ app.on('hash', ({ event }) => {
 ```
 
 #### Client-side Redirects
-Using the `ignore` option, you can block a route and navigate to another, effectively creating a redirect. However, operator will **not redirect on initial load.** Currently.
+Using the `handlers` option, you can block a route and navigate to another, effectively creating a redirect. This will work on page load as well, but please note that because we still to wait for the javascript to load, users might see a flash of the redirected page before Operator kicks in and sends them along.
 ```javascript
 const app = operator({
   root: '#root',
-  ignore: [
+  handlers: [
     ['products', path => /products/.test(path)]
   ]
 })
@@ -202,7 +202,4 @@ app.on('products', ({ event }) => {
 - [micromanager](https://github.com/estrattonbailey/micromanager) Route-managed client-side binding controller in ES6. Useful for preventing double-bindings between pages. by [@estrattonbailey](https://github.com/estrattonbailey)
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
-## TODO
-1. On-page-load redirects?
-
-MIT License - Would love to hear your thoughts! :)
+MIT License
