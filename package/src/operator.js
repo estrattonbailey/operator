@@ -121,14 +121,12 @@ export default class Operator {
     this.setState({ route, title })
   }
 
-  ignored (event, href) {
+  handlers (event = null, href = state.route) {
     const route = sanitize(href)
 
-    return this.config.ignore.filter((t) => {
+    return this.config.handlers.filter((t) => {
       if (Array.isArray(t)) {
-        // matches test
-        let res = t[1](route)
-        // if a match, fire listener
+        const res = t[1](route)
         if (res) {
           this.emit(t[0], {
             route,

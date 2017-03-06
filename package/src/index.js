@@ -5,7 +5,7 @@ import { link } from './url'
 export default ({
   root = document.body,
   duration = 0,
-  ignore = []
+  handlers = []
 }) => {
   /**
    * Instantiate
@@ -13,7 +13,7 @@ export default ({
   const operator = new Operator({
     root,
     duration,
-    ignore
+    handlers
   })
 
   /**
@@ -34,7 +34,7 @@ export default ({
     const internal = link.isSameOrigin(href)
     const external = anchor.getAttribute('rel') === 'external'
     const disabled = anchor.classList.contains('no-ajax')
-    const ignored = operator.ignored(e, href)
+    const ignored = operator.handlers(e, href)
     const hash = link.isHash(href)
 
     if (!internal || external || disabled || ignored || hash) { return }
@@ -54,7 +54,7 @@ export default ({
   window.onpopstate = (e) => {
     const href = e.target.location.href
 
-    if (operator.ignored(e, href)) {
+    if (operator.handlers(e, href)) {
       if (link.isHash(href)) { return }
 
       return window.location.reload()

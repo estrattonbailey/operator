@@ -3,6 +3,9 @@ import operator from '../../../package/dist/index.js'
 const app = operator({
   root: '#root',
   duration: 200,
+  handlers: [
+    ['redirect', path => /redirect/.test(path)]
+  ]
 })
 
 window.app = app
@@ -22,3 +25,11 @@ app.on('transition:after', ({ route }) => {
     document.documentElement.classList.remove('is-page')
   }
 })
+
+app.on('redirect', ({ event }) => {
+  event && event.preventDefault()
+
+  app.go('/')
+})
+
+app.handlers()
