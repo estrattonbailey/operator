@@ -35,10 +35,10 @@ export default class Operator {
   }
 
   setState ({ route, title }) {
-    state.route = route
+    state.route = route === '' ? '/' : route
     title ? state.title = title : null
 
-    setActiveLinks(route)
+    setActiveLinks(state.route)
 
     document.title = title
   }

@@ -20,3 +20,19 @@
 .full {
   height: 100vh;
 }
+
+html {
+  transition-property: opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+html.is-transitioning {
+  opacity: 0;
+  &.is-page {
+    transform: scale(0.98);
+  }
+}
+
+a.is-active {
+  color: tomato;
+}

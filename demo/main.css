@@ -556,3 +556,22 @@ th {
 
 .full {
   height: 100vh; }
+
+html {
+  -webkit-transition-property: opacity, -webkit-transform;
+  transition-property: opacity, -webkit-transform;
+  transition-property: opacity, transform;
+  transition-property: opacity, transform, -webkit-transform;
+  -webkit-transition-duration: 200ms;
+          transition-duration: 200ms;
+  -webkit-transition-timing-function: ease-in-out;
+          transition-timing-function: ease-in-out; }
+
+html.is-transitioning {
+  opacity: 0; }
+  html.is-transitioning.is-page {
+    -webkit-transform: scale(0.98);
+            transform: scale(0.98); }
+
+a.is-active {
+  color: tomato; }
