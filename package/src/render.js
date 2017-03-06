@@ -36,10 +36,10 @@ export default (page, { duration, root }, emit) => (route, markup, cb) => {
   })
 
   const end = tarry(() => {
+    emit('transition:after', { route })
     cb(title)
     page.style.height = ''
     document.documentElement.classList.remove('is-transitioning')
-    emit('transition:after', { route })
   })
 
   queue(start(0), render(duration), end(0))()

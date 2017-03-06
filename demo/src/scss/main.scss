@@ -11,6 +11,14 @@
 @import 'lib/tables';
 @import 'lib/spacing';
 
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+}
+
 .fill-v {
   height: 100%;
 }
