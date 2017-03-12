@@ -46,7 +46,7 @@
     "loop.js": "^0.3.0",
     "nanoajax": "^0.4.3",
     "navigo": "^2.2.0",
-    "scroll-restoration": "0.0.1",
+    "scroll-restoration": "^1.0.0",
     "tarry.js": "^0.4.1"
   }
 }

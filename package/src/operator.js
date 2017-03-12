@@ -72,6 +72,8 @@ export default class Operator {
         router.navigate(route)
       )
 
+      scroll.restore()
+
       this.setState(res)
 
       this.emit('route:after', res)
@@ -83,17 +85,17 @@ export default class Operator {
 
     const route = sanitize(href)
 
-    if (resolve) {
+    if (!resolve) {
       scroll.save()
     }
 
     const cached = cache.get(route)
 
+    this.emit('route:before', { route })
+
     if (cached) {
       return this.render(route, cached, callback)
     }
-
-    this.emit('route:before', { route })
 
     this.get(route, callback)
   }

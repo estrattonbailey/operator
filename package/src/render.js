@@ -1,5 +1,4 @@
 import { tarry, queue } from 'tarry.js'
-import scroll from 'scroll-restoration'
 import evalScripts from './eval.js'
 
 const parser = new window.DOMParser()
@@ -32,14 +31,13 @@ export default (page, { duration, root }, emit) => (route, markup, cb) => {
   const render = tarry(() => {
     page.innerHTML = res.querySelector(root).innerHTML
     evalScripts(res, document)
-    scroll.restore()
   })
 
   const end = tarry(() => {
-    emit('transition:after', { route })
     cb(title)
     page.style.height = ''
     document.documentElement.classList.remove('is-transitioning')
+    emit('transition:after', { route })
   })
 
   queue(start(0), render(duration), end(0))()
