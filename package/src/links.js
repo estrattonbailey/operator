@@ -1,18 +1,17 @@
-const activeLinks = []
+let activeLinks = []
 
-const toggle = bool => {
-  for (let i = 0; i < activeLinks.length; i++) {
-    activeLinks[i].classList[bool ? 'add' : 'remove']('is-active')
-  }
-}
-
-// TODO do I need to empty the array
-// or can I just reset to []
 export default (route) => {
-  toggle(false)
+  const regex = /^\/$/.test(route) ? RegExp(/^\/$/) : new RegExp(route)
 
-  activeLinks.splice(0, activeLinks.length)
-  activeLinks.push(...Array.prototype.slice.call(document.querySelectorAll(`[href$="${route}"]`)))
+  for (let i = 0; i < activeLinks.length; i++) {
+    activeLinks[i].classList.remove('is-active')
+  }
 
-  toggle(true)
+  activeLinks = Array.prototype.slice.call(document.querySelectorAll(`[href$="${route}"]`))
+
+  for (let i = 0; i < activeLinks.length; i++) {
+    if (regex.test(activeLinks[i].href)) {
+      activeLinks[i].classList.add('is-active')
+    }
+  }
 }

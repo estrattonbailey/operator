@@ -119,7 +119,7 @@ export default class Operator {
   push (route = null, title = state.title) {
     if (!route) { return }
 
-    this.router.navigate(route)
+    router.navigate(route)
     this.setState({ route, title })
   }
 
