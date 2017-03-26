@@ -3,6 +3,8 @@ An AJAX + routing library that transforms a normal site into a single page appli
 
 **This is v2 beta. Please be aware there may still be a few bugs ;)**
 
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](http://standardjs.com)
+
 ### Features
 1. Drop-in solution, simple config
 2. Easily style transitions using CSS
