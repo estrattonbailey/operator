@@ -1,4 +1,4 @@
-# Operator v2 [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
+# Operator v2
 An AJAX + routing library that transforms a normal site into a single page application (SPA). It's light, fast, and flexible.
 
 **This is v2 beta. Please be aware there may still be a few bugs ;)**
@@ -225,5 +225,9 @@ load(app.getState().route)
 ## Related Projects
 - [micromanager](https://github.com/estrattonbailey/micromanager) Route-managed client-side binding controller in ES6. Useful for preventing double-bindings between pages. by [@estrattonbailey](https://github.com/estrattonbailey)
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
+
+## Sites Using Operator
+- [Genexa Health](https://www.genexahealth.com/)
+- [Gitman Vintage](https://gitmanvintage.com/)
 
 MIT License
