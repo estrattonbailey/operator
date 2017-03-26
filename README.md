@@ -193,6 +193,25 @@ app.on('products', ({ event }) => {
 })
 ```
 
+#### Code-splitting w/Webpack
+With Webpack v2, code-splitting is ridiculously easy. Full example [here](https://github.com/estrattonbailey/estrattonbailey/blob/master/src/js/index.js).
+```javascript
+const load = route => {
+  // load about page
+  if (/about/.test(route)) {
+    import('./pages/about.js')
+      .then(p => p.default())
+      .catch(err => console.error(err))
+  }
+}
+
+// on route change
+app.on('route:after', ({ route }) => load(route))
+
+// on start-up
+load(app.getState().route)
+```
+
 ## Dependencies
 - [delegate:](https://github.com/zenorocha/delegate) Lightweight event delegation. by [@zenorocha](https://github.com/zenorocha)
 - [nanoajax:](https://github.com/yanatan16/nanoajax) An ajax library you need a microscope to see. by [@yanatan16](https://github.com/yanatan16)
