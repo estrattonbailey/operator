@@ -1,5 +1,7 @@
-# Operator [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
+# Operator v2 [![npm](https://img.shields.io/npm/v/operator.js.svg?maxAge=2592000)](https://www.npmjs.com/package/operator.js)
 An AJAX + routing library that transforms a normal site into a single page application (SPA). It's light, fast, and flexible.
+
+**This is v2 beta. Please be aware there may still be a few bugs ;)**
 
 ### Features
 1. Drop-in solution, simple config
@@ -9,7 +11,8 @@ An AJAX + routing library that transforms a normal site into a single page appli
 
 ## Install
 ```javascript
-npm i operator.js --save
+# install v2 beta
+npm i operator.js@next --save
 ```
 
 ## Usage
@@ -141,7 +144,7 @@ operator.go('/products', ({ route, title }) => {
 ### .push(route)
 Update History and set a new active URL, but don't fetch any data. Useful for manual route manipulation relating to UI changes.
 ```javascript
-operator.push('/products/lightbox-open')
+operator.push('/products/lightbox-open', 'Optional Title')
 
 // or for hash
 operator.push('#anchor')
