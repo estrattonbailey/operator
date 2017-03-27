@@ -224,6 +224,7 @@ load(app.getState().route)
 
 ## Related Projects
 - [micromanager](https://github.com/estrattonbailey/micromanager) Route-managed client-side binding controller in ES6. Useful for preventing double-bindings between pages. by [@estrattonbailey](https://github.com/estrattonbailey)
+- [putz](https://github.com/estrattonbailey/putz) A tiny progress bar library for AJAX and SPAs in ES6. by [@estrattonbailey](https://github.com/estrattonbailey)
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
 ## Sites Using Operator
