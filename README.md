@@ -225,7 +225,8 @@ load(app.getState().route)
 - [jump.js](https://github.com/callmecavs/jump.js) A small, modern, dependency-free smooth scrolling library. by [@callmecavs](https://github.com/callmecavs)
 
 ## Sites Using Operator
-- [Genexa Health](https://www.genexahealth.com/)
+- [Barrel NY](https://www.barrelny.com/)
 - [Gitman Vintage](https://gitmanvintage.com/)
+- [Genexa Health](https://www.genexahealth.com/)
 
 MIT License
