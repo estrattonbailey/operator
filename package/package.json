@@ -1,6 +1,6 @@
 {
   "name": "operator.js",
-  "version": "1.0.4",
+  "version": "2.0.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -43,9 +43,10 @@
   },
   "dependencies": {
     "delegate": "^3.0.1",
-    "loop.js": "^0.2.2",
+    "loop.js": "^0.3.0",
     "nanoajax": "^0.4.3",
     "navigo": "^2.2.0",
-    "tarry.js": "^1.0.0"
+    "scroll-restoration": "^1.0.0",
+    "tarry.js": "^0.4.1"
   }
 }

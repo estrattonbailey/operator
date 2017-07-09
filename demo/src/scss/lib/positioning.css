@@ -1,0 +1,9 @@
+
+.relative { position: relative }
+.absolute { position: absolute }
+.fixed { position: fixed }
+.fit-t, .fit-x { top: 0 }
+.fit-b, .fit-x { bottom: 0 }
+.fit-l, .fit-x { left: 0 }
+.fit-r, .fit-x { right: 0 }
+

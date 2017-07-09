@@ -1,0 +1,25 @@
+
+/**
+ * Buttons should be button.button or
+ * .button[role="button"] for accessibility
+ */
+button.button,
+.button[role="button"],
+input.button[type="submit"] {
+  border: 0;
+  border-radius: 0;
+  display: inline-block;
+  background-color: #000;
+  color: white;
+  cursor: pointer;
+  padding: 0.7em 2em;
+  line-height: inherit;
+  text-decoration: none;
+  text-align: center;
+  -webkit-appearance: none;
+}
+button[disabled], 
+input[disabled] { 
+  cursor: default 
+}
+

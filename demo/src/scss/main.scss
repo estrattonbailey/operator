@@ -1,0 +1,46 @@
+@import 'lib/display';
+@import 'lib/positioning';
+@import 'lib/flexbox';
+@import 'lib/align';
+@import 'lib/floats';
+@import 'lib/z-index';
+@import 'lib/typography';
+@import 'lib/buttons';
+@import 'lib/forms';
+@import 'lib/lists';
+@import 'lib/tables';
+@import 'lib/spacing';
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+}
+
+.fill-v {
+  height: 100%;
+}
+.fill-h {
+  width: 100%;
+}
+.full {
+  height: 100vh;
+}
+
+html {
+  transition-property: opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+html.is-transitioning {
+  opacity: 0;
+  &.is-page {
+    transform: scale(0.98);
+  }
+}
+
+a.is-active {
+  color: #ff4567;
+}
