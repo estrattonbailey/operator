@@ -6,7 +6,7 @@ Drop-in AJAX & routing library that transforms a normal site into a single page 
 ### Features
 1. Drop-in solution, simple config
 2. Easily style transitions using CSS
-3. Visited pages are **cached by default* for repeat views
+3. Visited pages are **cached by default** for repeat views
 4. Lightweight: **3.7kb gzipped**
 
 ## Install
