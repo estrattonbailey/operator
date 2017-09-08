@@ -33,7 +33,7 @@ export default function operator ({
 
     ev.emit('beforeRender')
 
-    document.documentElement.classList.add('is-transitioning')
+    document.documentElement.classList.add('operator-is-transitioning')
     _root.style.height = _root.clientHeight + 'px'
 
     setTimeout(() => {
@@ -43,7 +43,7 @@ export default function operator ({
 
       setTimeout(() => {
         _root.style.height = ''
-        document.documentElement.classList.remove('is-transitioning')
+        document.documentElement.classList.remove('operator-is-transitioning')
         setActiveLinks(pathname)
         ev.emit('afterRender')
       }, 0)
@@ -75,6 +75,8 @@ export default function operator ({
     go (pathname) {
       const done = () => this.prefetch(pathname).then(markup => render(markup, pathname))
 
+      if (routes.length < 1) return done()
+
       for (let i = 0; i < routes.length; i++) {
         const r = routes[i]
         const params = r.match(pathname)
@@ -95,7 +97,7 @@ export default function operator ({
     },
     prefetch (route) {
       const cached = cache.get(route)
-      return cached ? Promise.resolve(cached) : fetch(route).then(res => res.text()).then(markup => {
+      return cached ? Promise.resolve(cached) : fetch(route, { credentials: 'include' }).then(res => res.text()).then(markup => {
         cache.set(route, markup)
         return markup
       })
