@@ -85,17 +85,26 @@ export default function operator ({
 
       if (routes.length < 1) return done()
 
+      /**
+       * If we have configured routes,
+       * check them and fire any handlers
+       */
       for (let i = 0; i < routes.length; i++) {
         const r = routes[i]
         const params = r.match(pathname)
 
+        /**
+         * params will return be `null` if
+         * there was a match, but not parametized
+         * route params
+         */
         if (params === false) {
           done()
           continue
         }
 
-        Promise.resolve(r.handler(params || {})).then(valid => {
-          valid ? done() : window.location.pathname = pathname
+        Promise.resolve(r.handler(params || {}, pathname)).then(valid => {
+          valid !== false ? done() : window.location.pathname = pathname
         })
       }
     },

@@ -21,7 +21,7 @@ export function collectParams (r, pathname) {
 export default function createRoute (route, handler) {
   const keys = []
 
-  const regex = new RegExp(route.replace(/:[^\s/]+/g, (key) => {
+  const regex = new RegExp(route.replace('*', '.+').replace(/:[^\s/]+/g, (key) => {
     keys.push(key.slice(1))
     return '([\\w-]+)'
   }), 'ig')
