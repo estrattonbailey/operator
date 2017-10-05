@@ -119,8 +119,8 @@ export default function operator ({
         return markup
       })
     },
-    destroy () {
-      document.body.removeEventListener('click', handleClick)
+    addRoute (route, handler) {
+      routes.push(createRoute(route, handler))
     },
     disable () {
       ajaxDisabled = true
@@ -130,6 +130,9 @@ export default function operator ({
     },
     isEnabled () {
       return ajaxDisabled
+    },
+    destroy () {
+      document.body.removeEventListener('click', handleClick)
     }
   }
 
