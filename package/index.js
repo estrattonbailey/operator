@@ -31,7 +31,7 @@ export default function operator ({
     const dom = new window.DOMParser().parseFromString(markup, 'text/html')
     const title = dom.title
 
-    ev.emit('beforeRender')
+    ev.emit('beforeRender', pathname)
 
     document.documentElement.classList.add('operator-is-transitioning')
     _root.style.height = _root.clientHeight + 'px'
@@ -45,7 +45,7 @@ export default function operator ({
         _root.style.height = ''
         document.documentElement.classList.remove('operator-is-transitioning')
         setActiveLinks(pathname)
-        ev.emit('afterRender')
+        ev.emit('afterRender', pathname)
       }, 0)
     }, transition.speed)
   }
