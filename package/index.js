@@ -22,6 +22,8 @@ export default function operator ({
     return console.error('operator: the history API is unavailable, aborting.')
   }
 
+  let ajaxDisabled = false
+
   const ev = mitt()
 
   routes = Object.keys(routes).map(k => createRoute(k, routes[k]))
@@ -55,6 +57,8 @@ export default function operator ({
   }
 
   function handleClick (e) {
+    if (ajaxDisabled) return
+
     let target = e.target
 
     while (target && !target.href) {
@@ -108,6 +112,15 @@ export default function operator ({
     },
     destroy () {
       document.body.removeEventListener('click', handleClick)
+    },
+    disable () {
+      ajaxDisabled = true
+    },
+    enable () {
+      ajaxDisabled = false
+    },
+    isEnabled () {
+      return ajaxDisabled
     }
   }
 
