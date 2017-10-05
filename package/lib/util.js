@@ -61,3 +61,27 @@ export function setActiveLinks (route) {
     }
   }
 }
+
+export function evalScripts (newDom, existingDom) {
+  const existing = Array.prototype.slice.call(existingDom.getElementsByTagName('script'))
+  const scripts = newDom.getElementsByTagName('script')
+
+  for (let i = 0; i < scripts.length; i++) {
+    if (existing.filter(e => e.isEqualNode(scripts[i])).length > 0) {
+      continue
+    }
+
+    const s = document.createElement('script')
+
+    for (let a = 0; a < scripts[i].attributes.length; a++) {
+      const attr = scripts[i].attributes[a]
+      s.setAttribute(attr.name, attr.value)
+    }
+
+    if (!s.src) {
+      s.innerHTML = scripts[i].innerHTML
+    }
+
+    document.body.appendChild(s)
+  }
+}

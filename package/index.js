@@ -5,7 +5,8 @@ import {
   location,
   isSameURL,
   setActiveLinks,
-  getValidPath
+  getValidPath,
+  evalScripts
 } from './lib/util.js'
 import createRoute from './lib/routes.js'
 
@@ -14,7 +15,8 @@ export default function operator ({
   transition = {
     speed: 400
   },
-  routes = {}
+  routes = {},
+  evaluateScripts = false
 }) {
   if (!window.history.pushState) {
     return console.error('operator: the history API is unavailable, aborting.')
@@ -27,25 +29,27 @@ export default function operator ({
   setActiveLinks(location.pathname)
 
   function render (markup, pathname) {
-    const _root = document.getElementById(root)
-    const dom = new window.DOMParser().parseFromString(markup, 'text/html')
-    const title = dom.title
+    const mountNode = document.getElementById(root)
+    const oldDom = document
+    const newDom = new window.DOMParser().parseFromString(markup, 'text/html')
+    const title = newDom.title
 
     ev.emit('beforeRender', pathname)
 
     document.documentElement.classList.add('operator-is-transitioning')
-    _root.style.height = _root.clientHeight + 'px'
+    mountNode.style.height = mountNode.clientHeight + 'px'
 
     setTimeout(() => {
-      _root.innerHTML = dom.getElementById(root).innerHTML
+      mountNode.innerHTML = newDom.getElementById(root).innerHTML
 
       instance.push(pathname, title)
 
       setTimeout(() => {
-        _root.style.height = ''
+        mountNode.style.height = ''
         document.documentElement.classList.remove('operator-is-transitioning')
         setActiveLinks(pathname)
         ev.emit('afterRender', pathname)
+        evaluateScripts && evalScripts(newDom, oldDom)
       }, 0)
     }, transition.speed)
   }
