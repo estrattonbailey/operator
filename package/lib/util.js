@@ -41,7 +41,7 @@ export function getValidPath (e, target) {
   if (!isSameOrigin(target.href)) return
   if (isHash(target.href)) return
   if (target.classList.contains('no-ajax')) return
-  return sanitize(target.href)
+  return target.href
 }
 
 let activeLinks = []

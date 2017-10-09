@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "mitt": "^1.1.2",
+    "scroll-restoration": "^1.1.0",
     "unfetch": "^3.0.0"
   }
 }

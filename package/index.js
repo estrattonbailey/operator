@@ -1,5 +1,6 @@
 import mitt from 'mitt'
 import fetch from 'unfetch'
+import scroller from 'scroll-restoration'
 import cache from './lib/cache.js'
 import {
   location,
@@ -21,6 +22,11 @@ export default function operator ({
   if (!window.history.pushState) {
     return console.error('operator: the history API is unavailable, aborting.')
   }
+
+  /**
+   * Take control of scroll position
+   */
+  scroller.init()
 
   let ajaxDisabled = false
 
@@ -52,6 +58,7 @@ export default function operator ({
         setActiveLinks(pathname)
         ev.emit('afterRender', pathname)
         evaluateScripts && evalScripts(newDom, oldDom)
+        scroller.restore()
       }, 0)
     }, transition.speed)
   }
@@ -72,7 +79,29 @@ export default function operator ({
 
       if (isSameURL(target.href)) return
 
+      /** Only save on clicks, not on popstate */
+      scroller.save()
+
       instance.go(path)
+
+      return false
+    }
+  }
+
+  /**
+   * Notes on popstate:
+   *  - catches hashchange
+   *  - must validate url before AJAX
+   */
+  function onPopstate (e) {
+    if (ajaxDisabled) return
+
+    e.preventDefault()
+
+    const path = getValidPath(e, e.target)
+
+    if (path) {
+      instance.go(e.target.location.href)
 
       return false
     }
@@ -133,10 +162,12 @@ export default function operator ({
     },
     destroy () {
       document.body.removeEventListener('click', handleClick)
+      window.removeEventListener('popstate', onPopstate)
     }
   }
 
   document.body.addEventListener('click', handleClick)
+  window.addEventListener('popstate', onPopstate)
 
   return instance
 }
