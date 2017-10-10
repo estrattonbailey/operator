@@ -10,7 +10,7 @@ Drop-in PJAX solution.
 4. Precaching API
 5. Handles scroll position between pages (coming soon)
 6. Specify custom transitions per route (coming soon)
-7. Lightweight: **2.7kb gzipped**
+7. Lightweight: **<3kb gzipped**
 
 ## Install
 ```bash
@@ -52,9 +52,6 @@ app.destroy() // stop everything
 - async route transitions and data fetching
 - client-side redirects
 - code-splitting with webpack
-
-## TODO
-- scroll restoration
 
 ## Dependencies
 - [mitt:](https://github.com/developit/mitt) Tiny 200 byte functional event emitter / pubsub. by [@developit](https://github.com/developit)

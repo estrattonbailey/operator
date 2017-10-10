@@ -98,7 +98,15 @@ export default function operator ({
 
     e.preventDefault()
 
-    const path = getValidPath(e, e.target)
+    /**
+     * If it's a back button, the
+     * target should be a window object
+     */
+    const path = e.target.window ? (
+      e.target.window.location.href
+    ) : (
+      getValidPath(e, e.target)
+    )
 
     if (path) {
       instance.go(e.target.location.href)
