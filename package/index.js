@@ -9,7 +9,10 @@ import {
   getValidPath,
   evalScripts
 } from './lib/util.js'
-import createRoute from './lib/routes.js'
+import {
+  createRoute,
+  executeRoute
+} from './lib/routes.js'
 
 export default function operator ({
   root = 'root',
@@ -119,31 +122,7 @@ export default function operator ({
     ...ev,
     go (pathname) {
       const done = () => this.prefetch(pathname).then(markup => render(markup, pathname))
-
-      if (routes.length < 1) return done()
-
-      /**
-       * If we have configured routes,
-       * check them and fire any handlers
-       */
-      for (let i = 0; i < routes.length; i++) {
-        const r = routes[i]
-        const params = r.match(pathname)
-
-        /**
-         * params will return be `null` if
-         * there was a match, but not parametized
-         * route params
-         */
-        if (params === false) {
-          done()
-          continue
-        }
-
-        Promise.resolve(r.handler(params || {}, pathname)).then(valid => {
-          valid !== false ? done() : window.location.pathname = pathname
-        })
-      }
+      executeRoute(pathname, routes, done)
     },
     push (route, title = document.title) {
       window.history.pushState({}, title, route)
@@ -176,6 +155,11 @@ export default function operator ({
 
   document.body.addEventListener('click', handleClick)
   window.addEventListener('popstate', onPopstate)
+
+  /**
+   * Runs any applicable routes on page load
+   */
+  executeRoute(window.location.pathname, routes)
 
   return instance
 }

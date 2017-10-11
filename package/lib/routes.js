@@ -18,13 +18,13 @@ export function collectParams (r, pathname) {
   return match ? r.params : match
 }
 
-export default function createRoute (route, handler) {
+export function createRoute (route, handler) {
   const keys = []
 
-  const regex = new RegExp(route.replace('*', '.+').replace(/:[^\s/]+/g, (key) => {
+  const regex = new RegExp(route.replace(/\*/g, '(?:.*)').replace(/([:*])(\w+)/g, (key) => {
     keys.push(key.slice(1))
     return '([\\w-]+)'
-  }), 'ig')
+  }) + '(?:[\/|?\w+]$|$)' + '$', 'ig')
 
   return {
     route,
@@ -36,4 +36,40 @@ export default function createRoute (route, handler) {
       return regex.test(pathname) ? collectParams(this, pathname) : false
     }
   }
+}
+
+export function executeRoute (pathname, routes, done) {
+  if (routes.length < 1) return done && done()
+
+  let handlers = []
+
+  /**
+   * If we have configured routes,
+   * check them and fire any handlers
+   */
+  for (let route of routes) {
+    const params = route.match(pathname)
+
+    /**
+     * params will return be `null` if
+     * there was a match, but not parametized
+     * route params. If params is `false`,
+     * it means a no-match, so skip the handler
+     */
+    if (params === false) {
+      continue
+    }
+
+    handlers.push(
+      route.handler(params || {}, pathname)
+    )
+  }
+
+  Promise.all(handlers).then(responses => {
+    for (let response of responses) {
+      if (response === false) return window.location.pathname = pathname
+    }
+
+    done && done()
+  })
 }
