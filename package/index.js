@@ -157,9 +157,13 @@ export default function operator ({
   window.addEventListener('popstate', onPopstate)
 
   /**
-   * Runs any applicable routes on page load
+   * Runs any applicable routes on page load,
+   * restore scroll (if saved at history.state.scrollPosition)
+   * *after* routes are fired
    */
-  executeRoute(window.location.pathname, routes)
+  executeRoute(window.location.pathname, routes, () => {
+    scroller.restore()
+  })
 
   return instance
 }
