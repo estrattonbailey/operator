@@ -1,11 +1,11 @@
 export const location = window.location
 
-export function getOrigin (href) {
-  const { protocol, host } = href || window.location
+export function getOrigin (loc) {
+  const { protocol, host } = loc || window.location
   return `${protocol}//${host}`
 }
 
-export function getURL (url) {
+export function getAnchor (url) {
   let a = document.createElement('a')
   a.href = url
   return a
@@ -25,12 +25,12 @@ export function isHash (href) {
 }
 
 export function isSameURL (href) {
-  return window.location.search === getURL(href).search &&
-    window.location.pathname === getURL(href).pathname
+  return window.location.search === getAnchor(href).search &&
+    window.location.pathname === getAnchor(href).pathname
 }
 
 export function isSameOrigin (href) {
-  return getOrigin() === getOrigin(getURL(href))
+  return getOrigin() === getOrigin(getAnchor(href))
 }
 
 export function getValidPath (e, target) {

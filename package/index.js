@@ -7,7 +7,7 @@ import {
   isSameURL,
   setActiveLinks,
   getValidPath,
-  getURL,
+  getAnchor,
   evalScripts
 } from './lib/util.js'
 import {
@@ -162,7 +162,7 @@ export default function operator ({
   const instance = {
     ...ev,
     go (href, isPopstate) {
-      href = getURL(href) // ensure it's a full address
+      href = getAnchor(href).href // ensure it's a full address
       const done = () => this.prefetch(href).then(markup => render(markup, href, isPopstate))
       executeRoute(href, routes, done)
     },
