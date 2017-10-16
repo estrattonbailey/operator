@@ -16,9 +16,7 @@ import {
 
 export default function operator ({
   root = 'root',
-  transition = {
-    speed: 400
-  },
+  transitionSpeed = 0,
   routes = {},
   evaluateScripts = false
 }) {
@@ -63,7 +61,7 @@ export default function operator ({
         evaluateScripts && evalScripts(newDom, oldDom)
         scroller.restore()
       }, 0)
-    }, transition.speed)
+    }, transitionSpeed)
   }
 
   function handleClick (e) {
@@ -125,7 +123,7 @@ export default function operator ({
       executeRoute(pathname, routes, done)
     },
     push (route, title = document.title) {
-      window.history.pushState({}, title, route)
+      window.history.pushState(window.history.state || {}, title, route)
       document.title = title
     },
     prefetch (route) {
