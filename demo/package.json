@@ -41,6 +41,6 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "operator.js": "^3.4.1"
+    "operator.js": "^3.4.2"
   }
 }

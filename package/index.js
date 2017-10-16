@@ -7,6 +7,7 @@ import {
   isSameURL,
   setActiveLinks,
   getValidPath,
+  getURL,
   evalScripts
 } from './lib/util.js'
 import {
@@ -29,35 +30,67 @@ export default function operator ({
    */
   scroller.init()
 
+  /**
+   * Changed via enable()/disable() methods
+   */
   let ajaxDisabled = false
 
+  /**
+   * Emitter instance
+   */
   const ev = mitt()
 
+  /**
+   * Map over routes to create pattern
+   * matching handlers
+   */
   routes = Object.keys(routes).map(k => createRoute(k, routes[k]))
 
+  /**
+   * Update active links to match initial
+   * page load
+   */
   setActiveLinks(location.pathname)
 
-  function render (markup, pathname) {
+  /**
+   * @param {string} markup The new markup from a successful request
+   * @param {string} href The new URL
+   * @param {boolean} isPopstate True if render is called via popstate, false otherwise
+   */
+  function render (markup, href, isPopstate) {
     const mountNode = document.getElementById(root)
     const oldDom = document
     const newDom = new window.DOMParser().parseFromString(markup, 'text/html')
     const title = newDom.title
 
-    ev.emit('beforeRender', pathname)
+    ev.emit('beforeRender', href)
 
     document.documentElement.classList.add('operator-is-transitioning')
     mountNode.style.height = mountNode.clientHeight + 'px'
 
+    /**
+     * After transition out, render new page
+     * and (optionally) push a new history location
+     */
     setTimeout(() => {
       mountNode.innerHTML = newDom.getElementById(root).innerHTML
 
-      instance.push(pathname, title)
+      /**
+       * If a popstate event occurred, we don't
+       * need to manually create a new history
+       * location: it's already there from
+       * a previous navigation
+       */
+      !isPopstate && instance.push(href, title)
 
+      /**
+       * Finish up
+       */
       setTimeout(() => {
         mountNode.style.height = ''
         document.documentElement.classList.remove('operator-is-transitioning')
-        setActiveLinks(pathname)
-        ev.emit('afterRender', pathname)
+        setActiveLinks(href)
+        ev.emit('afterRender', href)
         evaluateScripts && evalScripts(newDom, oldDom)
         scroller.restore()
       }, 0)
@@ -69,21 +102,29 @@ export default function operator ({
 
     let target = e.target
 
+    /**
+     * Find link that was clicked
+     */
     while (target && !target.href) {
       target = target.parentNode
     }
 
-    const path = getValidPath(e, target)
+    /**
+     * Validate URL
+     */
+    const href = getValidPath(e, target)
 
-    if (path) {
+    if (href) {
       e.preventDefault()
 
       if (isSameURL(target.href)) return
 
-      /** Only save on clicks, not on popstate */
+      /**
+       * Only save on clicks, not on popstate
+       */
       scroller.save()
 
-      instance.go(path)
+      instance.go(href)
 
       return false
     }
@@ -101,7 +142,9 @@ export default function operator ({
 
     /**
      * If it's a back button, the
-     * target should be a window object
+     * target should be a window object.
+     * Otherwise this could be a hash
+     * link or otherwise.
      */
     const path = e.target.window ? (
       e.target.window.location.href
@@ -110,7 +153,7 @@ export default function operator ({
     )
 
     if (path) {
-      instance.go(e.target.location.href)
+      instance.go(e.target.location.href, true) // set isPopstate to true
 
       return false
     }
@@ -118,12 +161,13 @@ export default function operator ({
 
   const instance = {
     ...ev,
-    go (pathname) {
-      const done = () => this.prefetch(pathname).then(markup => render(markup, pathname))
-      executeRoute(pathname, routes, done)
+    go (href, isPopstate) {
+      href = getURL(href) // ensure it's a full address
+      const done = () => this.prefetch(href).then(markup => render(markup, href, isPopstate))
+      executeRoute(href, routes, done)
     },
     push (route, title = document.title) {
-      window.history.pushState(window.history.state || {}, title, route)
+      window.history.pushState({}, title, route)
       document.title = title
     },
     prefetch (route) {

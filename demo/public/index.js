@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "b53aca583c36cb79f84e"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "f105f32357fbbb7dd6df"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -724,7 +724,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 exports.default = operator;
 
-var _mitt = __webpack_require__(2);
+var _mitt = __webpack_require__(6);
 
 var _mitt2 = _interopRequireDefault(_mitt);
 
@@ -732,27 +732,25 @@ var _unfetch = __webpack_require__(7);
 
 var _unfetch2 = _interopRequireDefault(_unfetch);
 
-var _scrollRestoration = __webpack_require__(6);
+var _scrollRestoration = __webpack_require__(5);
 
 var _scrollRestoration2 = _interopRequireDefault(_scrollRestoration);
 
-var _cache = __webpack_require__(3);
+var _cache = __webpack_require__(2);
 
 var _cache2 = _interopRequireDefault(_cache);
 
-var _util = __webpack_require__(5);
+var _util = __webpack_require__(4);
 
-var _routes = __webpack_require__(4);
+var _routes = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function operator(_ref) {
   var _ref$root = _ref.root,
       root = _ref$root === undefined ? 'root' : _ref$root,
-      _ref$transition = _ref.transition,
-      transition = _ref$transition === undefined ? {
-    speed: 400
-  } : _ref$transition,
+      _ref$transitionSpeed = _ref.transitionSpeed,
+      transitionSpeed = _ref$transitionSpeed === undefined ? 0 : _ref$transitionSpeed,
       _ref$routes = _ref.routes,
       routes = _ref$routes === undefined ? {} : _ref$routes,
       _ref$evaluateScripts = _ref.evaluateScripts,
@@ -767,41 +765,73 @@ function operator(_ref) {
    */
   _scrollRestoration2.default.init();
 
+  /**
+   * Changed via enable()/disable() methods
+   */
   var ajaxDisabled = false;
 
+  /**
+   * Emitter instance
+   */
   var ev = (0, _mitt2.default)();
 
+  /**
+   * Map over routes to create pattern
+   * matching handlers
+   */
   routes = Object.keys(routes).map(function (k) {
     return (0, _routes.createRoute)(k, routes[k]);
   });
 
+  /**
+   * Update active links to match initial
+   * page load
+   */
   (0, _util.setActiveLinks)(_util.location.pathname);
 
-  function render(markup, pathname) {
+  /**
+   * @param {string} markup The new markup from a successful request
+   * @param {string} href The new URL
+   * @param {boolean} isPopstate True if render is called via popstate, false otherwise
+   */
+  function render(markup, href, isPopstate) {
     var mountNode = document.getElementById(root);
     var oldDom = document;
     var newDom = new window.DOMParser().parseFromString(markup, 'text/html');
     var title = newDom.title;
 
-    ev.emit('beforeRender', pathname);
+    ev.emit('beforeRender', href);
 
     document.documentElement.classList.add('operator-is-transitioning');
     mountNode.style.height = mountNode.clientHeight + 'px';
 
+    /**
+     * After transition out, render new page
+     * and (optionally) push a new history location
+     */
     setTimeout(function () {
       mountNode.innerHTML = newDom.getElementById(root).innerHTML;
 
-      instance.push(pathname, title);
+      /**
+       * If a popstate event occurred, we don't
+       * need to manually create a new history
+       * location: it's already there from
+       * a previous navigation
+       */
+      !isPopstate && instance.push(href, title);
 
+      /**
+       * Finish up
+       */
       setTimeout(function () {
         mountNode.style.height = '';
         document.documentElement.classList.remove('operator-is-transitioning');
-        (0, _util.setActiveLinks)(pathname);
-        ev.emit('afterRender', pathname);
+        (0, _util.setActiveLinks)(href);
+        ev.emit('afterRender', href);
         evaluateScripts && (0, _util.evalScripts)(newDom, oldDom);
         _scrollRestoration2.default.restore();
       }, 0);
-    }, transition.speed);
+    }, transitionSpeed);
   }
 
   function handleClick(e) {
@@ -809,21 +839,29 @@ function operator(_ref) {
 
     var target = e.target;
 
+    /**
+     * Find link that was clicked
+     */
     while (target && !target.href) {
       target = target.parentNode;
     }
 
-    var path = (0, _util.getValidPath)(e, target);
+    /**
+     * Validate URL
+     */
+    var href = (0, _util.getValidPath)(e, target);
 
-    if (path) {
+    if (href) {
       e.preventDefault();
 
       if ((0, _util.isSameURL)(target.href)) return;
 
-      /** Only save on clicks, not on popstate */
+      /**
+       * Only save on clicks, not on popstate
+       */
       _scrollRestoration2.default.save();
 
-      instance.go(path);
+      instance.go(href);
 
       return false;
     }
@@ -841,27 +879,30 @@ function operator(_ref) {
 
     /**
      * If it's a back button, the
-     * target should be a window object
+     * target should be a window object.
+     * Otherwise this could be a hash
+     * link or otherwise.
      */
     var path = e.target.window ? e.target.window.location.href : (0, _util.getValidPath)(e, e.target);
 
     if (path) {
-      instance.go(e.target.location.href);
+      instance.go(e.target.location.href, true); // set isPopstate to true
 
       return false;
     }
   }
 
   var instance = _extends({}, ev, {
-    go: function go(pathname) {
+    go: function go(href, isPopstate) {
       var _this = this;
 
+      href = (0, _util.getURL)(href); // ensure it's a full address
       var done = function done() {
-        return _this.prefetch(pathname).then(function (markup) {
-          return render(markup, pathname);
+        return _this.prefetch(href).then(function (markup) {
+          return render(markup, href, isPopstate);
         });
       };
-      (0, _routes.executeRoute)(pathname, routes, done);
+      (0, _routes.executeRoute)(href, routes, done);
     },
     push: function push(route) {
       var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document.title;
@@ -930,74 +971,6 @@ var app = (0, _operator2.default)({
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//      
-// An event handler can take an optional event argument
-// and should not return a value
-                                          
-// An array of all currently registered event handlers for a type
-                                            
-// A map of event types and their corresponding event handlers.
-                        
-                                   
-  
-
-/** Mitt: Tiny (~200b) functional event emitter / pubsub.
- *  @name mitt
- *  @returns {Mitt}
- */
-function mitt(all                 ) {
-	all = all || Object.create(null);
-
-	return {
-		/**
-		 * Register an event handler for the given type.
-		 *
-		 * @param  {String} type	Type of event to listen for, or `"*"` for all events
-		 * @param  {Function} handler Function to call in response to given event
-		 * @memberOf mitt
-		 */
-		on: function on(type        , handler              ) {
-			(all[type] || (all[type] = [])).push(handler);
-		},
-
-		/**
-		 * Remove an event handler for the given type.
-		 *
-		 * @param  {String} type	Type of event to unregister `handler` from, or `"*"`
-		 * @param  {Function} handler Handler function to remove
-		 * @memberOf mitt
-		 */
-		off: function off(type        , handler              ) {
-			if (all[type]) {
-				all[type].splice(all[type].indexOf(handler) >>> 0, 1);
-			}
-		},
-
-		/**
-		 * Invoke all handlers for the given type.
-		 * If present, `"*"` handlers are invoked after type-matched handlers.
-		 *
-		 * @param {String} type  The event type to invoke
-		 * @param {Any} [evt]  Any value (object is recommended and powerful), passed to each handler
-		 * @memberof mitt
-		 */
-		emit: function emit(type        , evt     ) {
-			(all[type] || []).map(function (handler) { handler(evt); });
-			(all['*'] || []).map(function (handler) { handler(type, evt); });
-		}
-	};
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (mitt);
-//# sourceMappingURL=mitt.es.js.map
-
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1023,7 +996,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1160,7 +1133,7 @@ function executeRoute(pathname, routes, done) {
 }
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1278,11 +1251,79 @@ function evalScripts(newDom, existingDom) {
 }
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-var _extends=Object.assign||function(a){for(var c,b=1;b<arguments.length;b++)for(var d in c=arguments[b],c)Object.prototype.hasOwnProperty.call(c,d)&&(a[d]=c[d]);return a},scroll=function(a){return window.scrollTo(0,a)},state=function(){return history.state?history.state.scrollPosition:0},save=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null;window.history.replaceState(_extends({},window.history.state,{scrollPosition:a||window.pageYOffset||window.scrollY}),'')},restore=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null,b=state();a?a(b):scroll(b)},init=function(){'scrollRestoration'in history&&(history.scrollRestoration='manual',scroll(state()),window.onbeforeunload=function(){return save()})};Object.defineProperty(exports,'__esModule',{value:!0});exports.default='undefined'==typeof window?{}:{init:init,save:save,restore:restore,state:state};
+var _extends=Object.assign||function(a){for(var c,b=1;b<arguments.length;b++)for(var d in c=arguments[b],c)Object.prototype.hasOwnProperty.call(c,d)&&(a[d]=c[d]);return a},scroll=function(a){return window.scrollTo(0,a)},state=function(){return history.state?history.state.scrollPosition:0},save=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null;history.replaceState(_extends({},history.state,{scrollPosition:a||pageYOffset||scrollY}),'')},restore=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null,b=state();a?a(b):scroll(b)},init=function(){'scrollRestoration'in history&&(history.scrollRestoration='manual',scroll(state()),onbeforeunload=function onbeforeunload(){return save()})};Object.defineProperty(exports,'__esModule',{value:!0});exports.default='undefined'==typeof window?{}:{init:init,save:save,restore:restore,state:state};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//      
+// An event handler can take an optional event argument
+// and should not return a value
+                                          
+// An array of all currently registered event handlers for a type
+                                            
+// A map of event types and their corresponding event handlers.
+                        
+                                   
+  
+
+/** Mitt: Tiny (~200b) functional event emitter / pubsub.
+ *  @name mitt
+ *  @returns {Mitt}
+ */
+function mitt(all                 ) {
+	all = all || Object.create(null);
+
+	return {
+		/**
+		 * Register an event handler for the given type.
+		 *
+		 * @param  {String} type	Type of event to listen for, or `"*"` for all events
+		 * @param  {Function} handler Function to call in response to given event
+		 * @memberOf mitt
+		 */
+		on: function on(type        , handler              ) {
+			(all[type] || (all[type] = [])).push(handler);
+		},
+
+		/**
+		 * Remove an event handler for the given type.
+		 *
+		 * @param  {String} type	Type of event to unregister `handler` from, or `"*"`
+		 * @param  {Function} handler Handler function to remove
+		 * @memberOf mitt
+		 */
+		off: function off(type        , handler              ) {
+			if (all[type]) {
+				all[type].splice(all[type].indexOf(handler) >>> 0, 1);
+			}
+		},
+
+		/**
+		 * Invoke all handlers for the given type.
+		 * If present, `"*"` handlers are invoked after type-matched handlers.
+		 *
+		 * @param {String} type  The event type to invoke
+		 * @param {Any} [evt]  Any value (object is recommended and powerful), passed to each handler
+		 * @memberof mitt
+		 */
+		emit: function emit(type        , evt     ) {
+			(all[type] || []).map(function (handler) { handler(evt); });
+			(all['*'] || []).map(function (handler) { handler(type, evt); });
+		}
+	};
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (mitt);
+//# sourceMappingURL=mitt.es.js.map
+
 
 /***/ }),
 /* 7 */
