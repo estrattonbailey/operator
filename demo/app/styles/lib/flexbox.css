@@ -1,0 +1,15 @@
+.f { display: flex }
+.fw { flex-wrap: wrap }
+.ais { align-items: flex-start }
+.aie { align-items: flex-end }
+.aic { align-items: center }
+.aib { align-items: baseline }
+.jcs { justify-content: flex-start }
+.jce { justify-content: flex-end }
+.jcc { justify-content: center }
+.jcb { justify-content: space-between }
+.fa {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}

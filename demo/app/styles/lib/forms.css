@@ -1,0 +1,19 @@
+form {
+  margin: 0;
+}
+input,
+textarea,
+select {
+  display: inline-block;
+  outline: 0;
+  border-radius: 0;
+  border: 1px solid #000;
+  position: relative;
+  font-size: inherit;
+  background-color: transparent;
+}
+textarea {
+  max-width: 100%;
+  overflow: auto;
+  resize: vertical;
+}

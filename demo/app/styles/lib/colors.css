@@ -1,0 +1,22 @@
+:root {
+  --cg: whitesmoke;
+  --cb: DodgerBlue;
+  --cbl: black;
+}
+
+.cg {
+  color: var(--cg);
+}
+.cb {
+  color: var(--cb);
+}
+
+.bgg {
+  background-color: var(--cg);
+}
+.bgb {
+  background-color: var(--cb);
+}
+.bgw {
+  background-color: white;
+}

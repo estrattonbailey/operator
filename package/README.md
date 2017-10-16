@@ -1,16 +1,16 @@
 # operator.js
-Drop-in PJAX solution.
+A drop-in "PJAX" solution for fluid, smooth transitions between pages. **2.87kb gzipped.** Zero stress.
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](http://standardjs.com)
 
 ## Features
 1. Simple config
-2. Transitions handled via CSS
-3. Visited pages are **cached by default** for repeat views
-4. Precaching API
-5. Handles scroll position between pages (coming soon)
-6. Specify custom transitions per route (coming soon)
-7. Lightweight: **<3kb gzipped**
+2. Easily handle transitions with CSS
+3. Pages are cached after initial visit
+4. Pre-cache select pages, as needed
+4. Parametized routes
+4. Async-by-default, easy data loading between routes
+5. Manages scroll position between route changes
 
 ## Install
 ```bash
@@ -18,40 +18,153 @@ npm i operator.js --save
 ```
 
 ## Usage
+Import the library and call it with an empty object to use the default options.
 ```javascript
 import operator from 'operator.js'
 
+const app = operator({})
+```
+Operator requires a single wrapper around each of your pages.
+```html
+<div id='root'>
+  <!--> Page content here <!-->
+</div>
+```
+You'll also want some minimal CSS. Below is a basic fade-in/fade-out effect.
+```css
+#root {
+  transition: opacity var(--fast) var(--ease);
+}
+.operator-is-transitioning #root {
+  opacity: 0;
+}
+```
+
+**And that's it.** Internal links will now smoothly transition automatically.
+
+* * *
+
+## Options
+The operator factory accepts a single options object.
+
+```javascript
 const app = operator({
-  root: 'root',
-  transition: {
-    speed: 400
-  },
+  // options
+})
+```
+
+### Available options
+#### root - `string`
+The id of your outer wrapper. Default: `root`.
+```javascript
+const app = operator({
+  root: 'root'
+})
+```
+#### transitionSpeed - `number`
+The speed of your CSS transition, can be any number (milliseconds). Default: `0`.
+```javascript
+const app = operator({
+  transitionSpeed: 400
+})
+```
+#### routes - `object`
+An object where the keys are the routes and values are the route handlers. Each handler should return `true` to allow operator to follow the route. If you return `false`, the route will be followed via a normal page load. This is useful for a variety of reasons.
+
+Handlers can also return an instance of `Promise`. Within this `Promise`, you can request data for the next route, perform custom animations, or whatever you want. Operator will wait until the promise resolves before transitioning to the next route. Magic.
+
+Routes configured here are executed on initial startup.
+
+```javascript
+const app = operator({
   routes: {
-    'products/:id': ({ id }) => {
-      console.log(id)
-      return true // return false to perform a normal page load
+    '/products/:id': ({ id }) => {
+      return new Promise((resolve, reject) => {
+        api.getProductById(id).then(product => {
+          resolve(product)
+        })
+      })
+    },
+    '*': () => {
+      /**
+       * Could perform custom transitions
+       * on each route
+       */
+      return true
     }
   }
 })
+```
+#### evaluateScripts (experimental) - `boolean`
+If `true`, operator will parse each new route and attempt to re-mount scripts to the page. It does this by recreating each script tag and appending it to the DOM.
 
-app.on('beforeRender', () => {})
+## API
+
+### on(event, callback)
+Listen for emitted events from the instance. These can be useful to transitions, destroying other library instances, or initiating new instances.
+```javascript
+app.on('beforeRender', (newRoute) => {})
 app.on('afterRender', () => {})
-
-app.prefetch('/about').then(markup => {
-  // the /about route is now in cache
-})
-
-app.push('/pseudo-route', 'Optional Title') // pushes state without navigating
-
-app.go('/about') // transition to next route
-
-app.destroy() // stop everything
 ```
 
-## Advanced Usage TODO
-- async route transitions and data fetching
-- client-side redirects
-- code-splitting with webpack
+### go(route)
+Navigate to a route.
+```javascript
+app.go('/products')
+```
+
+### push(route[, title])
+Push a new path and title to `history` without loading any data. Useful for filtering, modals, etc.
+```javascript
+app.push('/products?sort=price', 'Filtered by Price')
+```
+
+### prefetch(route)
+Cache a request for an arbitrary route. The method also returns a `Promise` that resolves with the requested page.
+```javascript
+app.prefetch('/about').then(markup => {
+  // do something with page markup
+})
+```
+
+### addRoute(route, handler)
+Adds a route and handler. Routes added with this method are not executed on initial startup.
+```javascript
+app.addRoute('/products/:id', ({ id }) => {
+  // do something with product id
+  return true
+})
+```
+
+### disable()
+Disable operator without destorying the instance.
+
+### enable()
+Re-enable operator after disabling it.
+
+### isEnabled()
+Check if operator is enabled. Returns `true` or `false`.
+
+### destory()
+Stop everything. Pretty straighforward.
+
+* * *
+
+## Advanced Usage
+
+### Code splitting
+Operator doesn't do anything specifically to aid your in code splitting, but the async route handlers mean you can load the scripts for a new route *before* it's rendered, which keeps things buttery smooth.
+
+With webpack, it looks like this:
+```javascript
+app.addRoute('/products/*', () => {
+  return import('flickity').then(flickity => {
+    window.Flickity = flickity
+  })
+})
+```
+
+* * *
 
 ## Dependencies
 - [mitt:](https://github.com/developit/mitt) Tiny 200 byte functional event emitter / pubsub. by [@developit](https://github.com/developit)

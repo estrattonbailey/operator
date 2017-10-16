@@ -1,0 +1,46 @@
+@import 'lib/reset';
+@import 'lib/colors';
+@import 'lib/display';
+@import 'lib/positioning';
+@import 'lib/flexbox';
+@import 'lib/align';
+@import 'lib/spacing';
+@import 'lib/buttons';
+@import 'lib/forms';
+@import 'lib/lists';
+@import 'lib/typography';
+@import 'lib/z-index';
+
+.outer {
+  padding: 1.5em;
+}
+.outer-h {
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+.outer-v {
+  padding-top: 1.5em;
+  padding-bottom: 1.5em;
+}
+.outer-b {
+  padding-bottom: 1.5em;
+}
+.container {
+  max-width: 750px;
+}
+main {
+  width: 100%;
+  min-height: 100vh;
+}
+
+header {
+  a {
+    text-decoration: none;
+
+    &:hover {
+      color: DodgerBlue;
+      outline: 6px solid white;
+      background: white;
+    }
+  }
+}

@@ -1,52 +1,46 @@
 {
-  "name": "",
-  "version": "",
+  "name": "frame",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
-    "start": "parallelshell 'npm run js:watch' 'npm run css:watch'",
-    "js:build": "browserify src/js/main.js --debug -p [minifyify --map main.js.map --output main.js.map] > main.js",
-    "js:watch": "watchify src/js/main.js -v -d -o main.js",
-    "css:build": "node-sass src/scss/main.scss | postcss -u autoprefixer > main.css",
-    "css:watch": "onchange 'src/scss/**/*.scss' -- npm run css:build"
-  },
-  "browserify": {
-    "debug": true,
-    "cache": {},
-    "packageCache": {},
-    "extension": [
-      "js"
-    ],
-    "transform": [
-      "babelify"
-    ]
-  },
-  "browserify-shim": {},
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://"
+    "start": "concurrently 'npm run watch:css' 'npm run watch:js' 'npm run watch:site'",
+    "build": "npm run build:site && npm run build:js && npm run build:css",
+    "build:site": "fab",
+    "watch:site": "onchange 'app/markup/**/*.js' -- npm run build:site",
+    "build:js": "NODE_ENV=production webpack --progress -p",
+    "watch:js": "NODE_ENV=development webpack -w",
+    "build:css": "NODE_ENV=production postcss app/styles/main.css -o public/main.css",
+    "watch:css": "NODE_ENV=development postcss app/styles/main.css -w -o public/main.css"
   },
   "author": "estrattonbailey",
   "license": "MIT",
-  "bugs": {
-    "url": ""
-  },
-  "homepage": "",
   "devDependencies": {
-    "autoprefixer": "*",
-    "babel-preset-es2015": "*",
-    "babel-preset-react": "*",
-    "babelify": "*",
-    "browserify": "*",
-    "exorcist": "*",
-    "minifyify": "*",
-    "node-sass": "*",
-    "onchange": "*",
-    "parallelshell": "*",
-    "postcss-cli": "*",
-    "watchify": "*"
+    "babel-core": "^6.25.0",
+    "babel-eslint": "^7.2.3",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-module-resolver": "^2.7.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "concurrently": "^3.4.0",
+    "cssnano": "^3.10.0",
+    "fab.js": "^0.3.6",
+    "onchange": "^3.2.1",
+    "postcss": "^6.0.2",
+    "postcss-cli": "^4.1.0",
+    "postcss-cssnext": "^2.11.0",
+    "postcss-discard-comments": "^2.0.4",
+    "postcss-import": "^10.0.0",
+    "postcss-nested": "^2.0.2",
+    "standard": "^10.0.2",
+    "standard-loader": "^6.0.1",
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "operator.js": "^1.0.4"
+    "operator.js": "^3.4.1"
   }
 }
