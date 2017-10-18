@@ -46,7 +46,8 @@ export function getValidPath (e, target) {
 
 let activeLinks = []
 
-export function setActiveLinks (route) {
+export function setActiveLinks (href) {
+  const route = getAnchor(href).pathname
   const regex = /^\/$/.test(route) ? RegExp(/^\/$/) : new RegExp(route)
 
   for (let i = 0; i < activeLinks.length; i++) {

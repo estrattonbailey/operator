@@ -4,7 +4,7 @@ const p = process.env.NODE_ENV === 'production'
 
 module.exports = {
   devtool: 'cheap-module-source-map',
-  entry: path.join(__dirname, 'app/index.js'),
+  entry: path.join(__dirname, 'app/scripts/index.js'),
   output: {
     path: path.join(__dirname, 'public'),
     filename: 'index.js',
@@ -30,7 +30,9 @@ module.exports = {
     ]
   },
   resolve: {
-    alias: {}
+    alias: {
+      root: path.join(__dirname, 'app/scripts')
+    }
   },
   plugins: p ? [] : [
     new webpack.HotModuleReplacementPlugin()

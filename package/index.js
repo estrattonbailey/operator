@@ -50,7 +50,7 @@ export default function operator ({
    * Update active links to match initial
    * page load
    */
-  setActiveLinks(location.pathname)
+  setActiveLinks(location.href)
 
   /**
    * @param {string} markup The new markup from a successful request

@@ -41,6 +41,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
+    "micromanager": "^1.0.0",
     "operator.js": "^3.4.2"
   }
 }

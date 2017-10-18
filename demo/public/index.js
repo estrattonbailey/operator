@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "f105f32357fbbb7dd6df"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "a3c72903881d04fdda01"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -706,11 +706,94 @@
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(1)(__webpack_require__.s = 1);
+/******/ 	return hotCreateRequire(2)(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.init = init;
+exports.mount = mount;
+exports.unmount = unmount;
+var types = {};
+
+var __cache = {};
+
+function log(level, msg) {
+  var _console;
+
+  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+    args[_key - 2] = arguments[_key];
+  }
+
+  (_console = console)[level].apply(_console, ['⚙️ micromanager -', msg].concat(args));
+}
+
+function init(t) {
+  types = t;
+}
+
+function mount() {
+  for (var type in types) {
+    var attr = 'data-' + type;
+    var nodes = [].slice.call(document.querySelectorAll('[' + attr + ']'));
+    var path = types[type].replace(/^\/|\/$/, '');
+
+    for (var i = 0; i < nodes.length; i++) {
+      var name = nodes[i].getAttribute(attr);
+
+      try {
+        var instance = __webpack_require__(3)("./" + path + '/' + name + '.js').default(nodes[i]);
+
+        nodes[i].removeAttribute(attr);
+
+        if (instance) {
+          this.cache.set(instance.displayName || name, instance);
+        }
+      } catch (e) {
+        log('error', name + ' threw an error\n\n', e);
+      }
+    }
+  }
+}
+
+function unmount() {
+  for (var key in __cache) {
+    var instance = __cache[key];
+    if (instance.unmount) {
+      instance.unmount();
+      delete __cache[key];
+    }
+  }
+}
+
+var cache = exports.cache = {
+  set: function set(id, instance) {
+    if (__cache[id]) log('warn', 'a duplicate key ' + id + ' was found in the cache. This instance will be overwritten.');
+    __cache[id] = instance;
+  },
+  get: function get(id) {
+    try {
+      return __cache[id];
+    } catch (e) {
+      log('warn', 'can\'t find ' + id + ' in the cache', e);
+      return null;
+    }
+  },
+  dump: function dump() {
+    return __cache;
+  }
+};
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -724,25 +807,25 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 exports.default = operator;
 
-var _mitt = __webpack_require__(6);
+var _mitt = __webpack_require__(4);
 
 var _mitt2 = _interopRequireDefault(_mitt);
 
-var _unfetch = __webpack_require__(7);
+var _unfetch = __webpack_require__(9);
 
 var _unfetch2 = _interopRequireDefault(_unfetch);
 
-var _scrollRestoration = __webpack_require__(5);
+var _scrollRestoration = __webpack_require__(8);
 
 var _scrollRestoration2 = _interopRequireDefault(_scrollRestoration);
 
-var _cache = __webpack_require__(2);
+var _cache = __webpack_require__(5);
 
 var _cache2 = _interopRequireDefault(_cache);
 
-var _util = __webpack_require__(4);
+var _util = __webpack_require__(7);
 
-var _routes = __webpack_require__(3);
+var _routes = __webpack_require__(6);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -765,69 +848,37 @@ function operator(_ref) {
    */
   _scrollRestoration2.default.init();
 
-  /**
-   * Changed via enable()/disable() methods
-   */
   var ajaxDisabled = false;
 
-  /**
-   * Emitter instance
-   */
   var ev = (0, _mitt2.default)();
 
-  /**
-   * Map over routes to create pattern
-   * matching handlers
-   */
   routes = Object.keys(routes).map(function (k) {
     return (0, _routes.createRoute)(k, routes[k]);
   });
 
-  /**
-   * Update active links to match initial
-   * page load
-   */
   (0, _util.setActiveLinks)(_util.location.pathname);
 
-  /**
-   * @param {string} markup The new markup from a successful request
-   * @param {string} href The new URL
-   * @param {boolean} isPopstate True if render is called via popstate, false otherwise
-   */
-  function render(markup, href, isPopstate) {
+  function render(markup, pathname) {
     var mountNode = document.getElementById(root);
     var oldDom = document;
     var newDom = new window.DOMParser().parseFromString(markup, 'text/html');
     var title = newDom.title;
 
-    ev.emit('beforeRender', href);
+    ev.emit('beforeRender', pathname);
 
     document.documentElement.classList.add('operator-is-transitioning');
     mountNode.style.height = mountNode.clientHeight + 'px';
 
-    /**
-     * After transition out, render new page
-     * and (optionally) push a new history location
-     */
     setTimeout(function () {
       mountNode.innerHTML = newDom.getElementById(root).innerHTML;
 
-      /**
-       * If a popstate event occurred, we don't
-       * need to manually create a new history
-       * location: it's already there from
-       * a previous navigation
-       */
-      !isPopstate && instance.push(href, title);
+      instance.push(pathname, title);
 
-      /**
-       * Finish up
-       */
       setTimeout(function () {
         mountNode.style.height = '';
         document.documentElement.classList.remove('operator-is-transitioning');
-        (0, _util.setActiveLinks)(href);
-        ev.emit('afterRender', href);
+        (0, _util.setActiveLinks)(pathname);
+        ev.emit('afterRender', pathname);
         evaluateScripts && (0, _util.evalScripts)(newDom, oldDom);
         _scrollRestoration2.default.restore();
       }, 0);
@@ -839,29 +890,21 @@ function operator(_ref) {
 
     var target = e.target;
 
-    /**
-     * Find link that was clicked
-     */
     while (target && !target.href) {
       target = target.parentNode;
     }
 
-    /**
-     * Validate URL
-     */
-    var href = (0, _util.getValidPath)(e, target);
+    var path = (0, _util.getValidPath)(e, target);
 
-    if (href) {
+    if (path) {
       e.preventDefault();
 
       if ((0, _util.isSameURL)(target.href)) return;
 
-      /**
-       * Only save on clicks, not on popstate
-       */
+      /** Only save on clicks, not on popstate */
       _scrollRestoration2.default.save();
 
-      instance.go(href);
+      instance.go(path);
 
       return false;
     }
@@ -879,35 +922,32 @@ function operator(_ref) {
 
     /**
      * If it's a back button, the
-     * target should be a window object.
-     * Otherwise this could be a hash
-     * link or otherwise.
+     * target should be a window object
      */
     var path = e.target.window ? e.target.window.location.href : (0, _util.getValidPath)(e, e.target);
 
     if (path) {
-      instance.go(e.target.location.href, true); // set isPopstate to true
+      instance.go(e.target.location.href);
 
       return false;
     }
   }
 
   var instance = _extends({}, ev, {
-    go: function go(href, isPopstate) {
+    go: function go(pathname) {
       var _this = this;
 
-      href = (0, _util.getURL)(href); // ensure it's a full address
       var done = function done() {
-        return _this.prefetch(href).then(function (markup) {
-          return render(markup, href, isPopstate);
+        return _this.prefetch(pathname).then(function (markup) {
+          return render(markup, pathname);
         });
       };
-      (0, _routes.executeRoute)(href, routes, done);
+      (0, _routes.executeRoute)(pathname, routes, done);
     },
     push: function push(route) {
       var title = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document.title;
 
-      window.history.pushState({}, title, route);
+      window.history.pushState(window.history.state || {}, title, route);
       document.title = title;
     },
     prefetch: function prefetch(route) {
@@ -953,24 +993,132 @@ function operator(_ref) {
 }
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _operator = __webpack_require__(0);
+var _operator = __webpack_require__(1);
 
 var _operator2 = _interopRequireDefault(_operator);
 
+var _micromanager = __webpack_require__(0);
+
+var scripts = _interopRequireWildcard(_micromanager);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+scripts.init({
+  component: 'components/'
+});
+
+scripts.mount();
 
 var app = (0, _operator2.default)({
   transitionSpeed: 0
 });
 
+app.on('afterRender', function () {
+  scripts.unmount();
+  scripts.mount();
+});
+
 /***/ }),
-/* 2 */
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var map = {
+	"./dist/index.js": 0
+};
+function webpackContext(req) {
+	return __webpack_require__(webpackContextResolve(req));
+};
+function webpackContextResolve(req) {
+	var id = map[req];
+	if(!(id + 1)) // check for number or string
+		throw new Error("Cannot find module '" + req + "'.");
+	return id;
+};
+webpackContext.keys = function webpackContextKeys() {
+	return Object.keys(map);
+};
+webpackContext.resolve = webpackContextResolve;
+module.exports = webpackContext;
+webpackContext.id = 3;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//      
+// An event handler can take an optional event argument
+// and should not return a value
+                                          
+// An array of all currently registered event handlers for a type
+                                            
+// A map of event types and their corresponding event handlers.
+                        
+                                   
+  
+
+/** Mitt: Tiny (~200b) functional event emitter / pubsub.
+ *  @name mitt
+ *  @returns {Mitt}
+ */
+function mitt(all                 ) {
+	all = all || Object.create(null);
+
+	return {
+		/**
+		 * Register an event handler for the given type.
+		 *
+		 * @param  {String} type	Type of event to listen for, or `"*"` for all events
+		 * @param  {Function} handler Function to call in response to given event
+		 * @memberOf mitt
+		 */
+		on: function on(type        , handler              ) {
+			(all[type] || (all[type] = [])).push(handler);
+		},
+
+		/**
+		 * Remove an event handler for the given type.
+		 *
+		 * @param  {String} type	Type of event to unregister `handler` from, or `"*"`
+		 * @param  {Function} handler Handler function to remove
+		 * @memberOf mitt
+		 */
+		off: function off(type        , handler              ) {
+			if (all[type]) {
+				all[type].splice(all[type].indexOf(handler) >>> 0, 1);
+			}
+		},
+
+		/**
+		 * Invoke all handlers for the given type.
+		 * If present, `"*"` handlers are invoked after type-matched handlers.
+		 *
+		 * @param {String} type  The event type to invoke
+		 * @param {Any} [evt]  Any value (object is recommended and powerful), passed to each handler
+		 * @memberof mitt
+		 */
+		emit: function emit(type        , evt     ) {
+			(all[type] || []).map(function (handler) { handler(evt); });
+			(all['*'] || []).map(function (handler) { handler(type, evt); });
+		}
+	};
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (mitt);
+//# sourceMappingURL=mitt.es.js.map
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -996,7 +1144,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 3 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1133,7 +1281,7 @@ function executeRoute(pathname, routes, done) {
 }
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1251,82 +1399,14 @@ function evalScripts(newDom, existingDom) {
 }
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 var _extends=Object.assign||function(a){for(var c,b=1;b<arguments.length;b++)for(var d in c=arguments[b],c)Object.prototype.hasOwnProperty.call(c,d)&&(a[d]=c[d]);return a},scroll=function(a){return window.scrollTo(0,a)},state=function(){return history.state?history.state.scrollPosition:0},save=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null;history.replaceState(_extends({},history.state,{scrollPosition:a||pageYOffset||scrollY}),'')},restore=function(){var a=0<arguments.length&&arguments[0]!==void 0?arguments[0]:null,b=state();a?a(b):scroll(b)},init=function(){'scrollRestoration'in history&&(history.scrollRestoration='manual',scroll(state()),onbeforeunload=function onbeforeunload(){return save()})};Object.defineProperty(exports,'__esModule',{value:!0});exports.default='undefined'==typeof window?{}:{init:init,save:save,restore:restore,state:state};
 
 /***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//      
-// An event handler can take an optional event argument
-// and should not return a value
-                                          
-// An array of all currently registered event handlers for a type
-                                            
-// A map of event types and their corresponding event handlers.
-                        
-                                   
-  
-
-/** Mitt: Tiny (~200b) functional event emitter / pubsub.
- *  @name mitt
- *  @returns {Mitt}
- */
-function mitt(all                 ) {
-	all = all || Object.create(null);
-
-	return {
-		/**
-		 * Register an event handler for the given type.
-		 *
-		 * @param  {String} type	Type of event to listen for, or `"*"` for all events
-		 * @param  {Function} handler Function to call in response to given event
-		 * @memberOf mitt
-		 */
-		on: function on(type        , handler              ) {
-			(all[type] || (all[type] = [])).push(handler);
-		},
-
-		/**
-		 * Remove an event handler for the given type.
-		 *
-		 * @param  {String} type	Type of event to unregister `handler` from, or `"*"`
-		 * @param  {Function} handler Handler function to remove
-		 * @memberOf mitt
-		 */
-		off: function off(type        , handler              ) {
-			if (all[type]) {
-				all[type].splice(all[type].indexOf(handler) >>> 0, 1);
-			}
-		},
-
-		/**
-		 * Invoke all handlers for the given type.
-		 * If present, `"*"` handlers are invoked after type-matched handlers.
-		 *
-		 * @param {String} type  The event type to invoke
-		 * @param {Any} [evt]  Any value (object is recommended and powerful), passed to each handler
-		 * @memberof mitt
-		 */
-		emit: function emit(type        , evt     ) {
-			(all[type] || []).map(function (handler) { handler(evt); });
-			(all['*'] || []).map(function (handler) { handler(type, evt); });
-		}
-	};
-}
-
-/* harmony default export */ __webpack_exports__["default"] = (mitt);
-//# sourceMappingURL=mitt.es.js.map
-
-
-/***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

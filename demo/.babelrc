@@ -4,7 +4,9 @@
     "transform-object-rest-spread",
     ['module-resolver', {
       'root': ['.'],
-      'alias': {}
+      'alias': {
+        'root': './app/scripts'
+      }
     }]
   ],
   "presets": [
