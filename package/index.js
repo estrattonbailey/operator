@@ -105,7 +105,7 @@ export default function operator ({
     /**
      * Find link that was clicked
      */
-    while (target && !target.href) {
+    while (target && !(target.href && target.nodeName === 'A')) {
       target = target.parentNode
     }
 
