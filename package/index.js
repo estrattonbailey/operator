@@ -163,8 +163,14 @@ export default function operator ({
     ...ev,
     go (href, isPopstate) {
       href = getAnchor(href).href // ensure it's a full address
-      const done = () => this.prefetch(href).then(markup => render(markup, href, isPopstate))
-      executeRoute(href, routes, done)
+
+      executeRoute(href, routes, redirect => {
+        if (redirect) return this.go(redirect)
+
+        this.prefetch(href).then(markup => (
+          render(markup, href, isPopstate)
+        ))
+      })
     },
     push (route, title = document.title) {
       window.history.pushState({}, title, route)
@@ -203,7 +209,8 @@ export default function operator ({
    * restore scroll (if saved at history.state.scrollPosition)
    * *after* routes are fired
    */
-  executeRoute(window.location.pathname, routes, () => {
+  executeRoute(window.location.pathname, routes, redirect => {
+    if (redirect) return instance.go(redirect)
     scroller.restore()
   })
 

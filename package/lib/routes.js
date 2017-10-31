@@ -67,6 +67,7 @@ export function executeRoute (pathname, routes, done) {
 
   Promise.all(handlers).then(responses => {
     for (let response of responses) {
+      if (typeof response === 'string') return done(response) // handle redirect
       if (response === false) return window.location.pathname = pathname
     }
 
