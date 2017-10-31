@@ -258,17 +258,39 @@ em, .i{
 .outer{
   padding:1.5em;
 }
+@media (min-width: 56.26em){
+.outer{
+    padding:3em
+}
+  }
 .outer-h{
   padding-left:1.5em;
   padding-right:1.5em;
 }
+@media (min-width: 56.26em){
+.outer-h{
+    padding-left:3em;
+    padding-right:3em
+}
+  }
 .outer-v{
   padding-top:1.5em;
   padding-bottom:1.5em;
 }
+@media (min-width: 56.26em){
+.outer-v{
+    padding-top:3em;
+    padding-bottom:3em
+}
+  }
 .outer-b{
   padding-bottom:1.5em;
 }
+@media (min-width: 56.26em){
+.outer-b{
+    padding-bottom:3em
+}
+  }
 .container{
   max-width:750px;
 }

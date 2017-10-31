@@ -1,4 +1,5 @@
 @import 'lib/reset';
+@import 'lib/breakpoints';
 @import 'lib/colors';
 @import 'lib/display';
 @import 'lib/positioning';
@@ -13,17 +14,31 @@
 
 .outer {
   padding: 1.5em;
+  @media (--m) {
+    padding: 3em;
+  }
 }
 .outer-h {
   padding-left: 1.5em;
   padding-right: 1.5em;
+  @media (--m) {
+    padding-left: 3em;
+    padding-right: 3em;
+  }
 }
 .outer-v {
   padding-top: 1.5em;
   padding-bottom: 1.5em;
+  @media (--m) {
+    padding-top: 3em;
+    padding-bottom: 3em;
+  }
 }
 .outer-b {
   padding-bottom: 1.5em;
+  @media (--m) {
+    padding-bottom: 3em;
+  }
 }
 .container {
   max-width: 750px;
