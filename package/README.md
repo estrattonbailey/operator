@@ -11,6 +11,7 @@ A drop-in "PJAX" solution for fluid, smooth transitions between pages. **2.87kb 
 4. Parametized routes
 4. Async-by-default, easy data loading between routes
 5. Manages scroll position between route changes
+6. Client-side redirects
 
 ## Install
 ```bash
@@ -73,7 +74,9 @@ An object where the keys are the routes and values are the route handlers. Each 
 
 Handlers can also return an instance of `Promise`. Within this `Promise`, you can request data for the next route, perform custom animations, or whatever you want. Operator will wait until the promise resolves before transitioning to the next route. Magic.
 
-Routes configured here are executed on initial startup.
+Additionally, handlers can return a string that represents a path to redirect to. This path can be returned synchronously, or as the resolved value of a promise. See Client-side Redirects for an example.
+
+Routes configured on the initial instance are executed immediately when the page loads.
 
 ```javascript
 const app = operator({
@@ -128,7 +131,7 @@ app.prefetch('/about').then(markup => {
 ```
 
 ### addRoute(route, handler)
-Adds a route and handler. Routes added with this method are not executed on initial startup.
+Adds a route and handler. *Routes added with this method are not executed on initial startup.*
 ```javascript
 app.addRoute('/products/:id', ({ id }) => {
   // do something with product id
@@ -161,6 +164,31 @@ app.addRoute('/products/*', () => {
   return import('flickity').then(flickity => {
     window.Flickity = flickity
   })
+})
+```
+
+### Client-side redirects
+To create simple client side redirects, just return the path you wish to redirect to from your route handler.
+```javascript
+const app = operator({
+  routes: {
+    '/products/:id': ({ id }) => {
+      if (id === 'some-product') {
+        return '/products/all'
+      } else {
+        return true
+      }
+    },
+    '/about': () => {
+      return fetchAboutDataFromAPI().then(data => {
+        if (data.hasRedirect) {
+          return '/'
+        } else {
+          return true
+        }
+      })
+    }
+  }
 })
 ```
 
