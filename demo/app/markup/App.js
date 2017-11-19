@@ -3,27 +3,21 @@ import React from 'react'
 export default props => (
   <html>
     <head>
+      <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet" />
+      <link href="https://unpkg.com/svbstrate" rel="stylesheet" />
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.9.0/github-markdown.min.css" rel="stylesheet" />
       <link rel='stylesheet' type='text/css' href='/main.css' />
       <title>Operator</title>
     </head>
     <body>
-      <header className='outer bgg'>
-        <nav className='f aic fw outer-h'>
-          <a href='/' className='mr1 b caps h6'>Home</a>
-          <a href='/usage' className='mr1 b caps h6'>Usage</a>
-          <a href='/advanced' className='mr1 b caps h6'>Advanced</a>
-          <a href='/faq' className='mr1 b caps h6'>FAQ</a>
-        </nav>
-      </header>
-      <div className='outer-h outer-b bgg'>
-        <main className='bgw'>
-          <div className='container'>
-            <div className='outer' id='root'>
-              {props.children}
-            </div>
+      <main>
+        <div className='container mxa'>
+          <h1>operator.js</h1>
+
+          <div className='content markdown-body' data-component='readme'>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
 
       <script src='/index.js'></script>
     </body>

@@ -31,7 +31,8 @@ module.exports = {
   },
   resolve: {
     alias: {
-      root: path.join(__dirname, 'app/scripts')
+      root: path.join(__dirname, 'app/scripts'),
+      micromanagerRoot: path.join(__dirname, 'app/scripts')
     }
   },
   plugins: p ? [] : [

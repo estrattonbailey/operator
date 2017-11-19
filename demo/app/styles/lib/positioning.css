@@ -1,7 +1,0 @@
-.rel { position: relative }
-.abs { position: absolute }
-.fix { position: fixed }
-.fill, .top { top: 0 }
-.fill, .bottom { bottom: 0 }
-.fill, .left { left: 0 }
-.fill, .right { right: 0 }

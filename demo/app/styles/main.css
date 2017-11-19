@@ -1,61 +1,10 @@
-@import 'lib/reset';
-@import 'lib/breakpoints';
-@import 'lib/colors';
-@import 'lib/display';
-@import 'lib/positioning';
-@import 'lib/flexbox';
-@import 'lib/align';
-@import 'lib/spacing';
-@import 'lib/buttons';
-@import 'lib/forms';
-@import 'lib/lists';
-@import 'lib/typography';
-@import 'lib/z-index';
-
-.outer {
-  padding: 1.5em;
-  @media (--m) {
-    padding: 3em;
-  }
-}
-.outer-h {
-  padding-left: 1.5em;
-  padding-right: 1.5em;
-  @media (--m) {
-    padding-left: 3em;
-    padding-right: 3em;
-  }
-}
-.outer-v {
-  padding-top: 1.5em;
-  padding-bottom: 1.5em;
-  @media (--m) {
-    padding-top: 3em;
-    padding-bottom: 3em;
-  }
-}
-.outer-b {
-  padding-bottom: 1.5em;
-  @media (--m) {
-    padding-bottom: 3em;
-  }
-}
-.container {
-  max-width: 750px;
+html, body {
+  font-family: 'Roboto Mono', monospace;
+  color: #333;
 }
 main {
-  width: 100%;
-  min-height: 100vh;
+  padding: 35vh 1.5em;
 }
-
-header {
-  a {
-    text-decoration: none;
-
-    &:hover {
-      color: DodgerBlue;
-      outline: 6px solid white;
-      background: white;
-    }
-  }
+.container {
+  max-width: 1000px;
 }
