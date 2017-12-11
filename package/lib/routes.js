@@ -49,7 +49,6 @@ export function executeRoute (pathname, routes, done) {
    */
   for (let route of routes) {
     const params = route.match(pathname)
-
     /**
      * params will return be `null` if
      * there was a match, but not parametized

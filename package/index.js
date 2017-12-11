@@ -4,6 +4,7 @@ import scroller from 'scroll-restoration'
 import cache from './lib/cache.js'
 import {
   location,
+  isHash,
   isSameURL,
   setActiveLinks,
   getValidPath,
@@ -117,7 +118,14 @@ export default function operator ({
     if (href) {
       e.preventDefault()
 
-      if (isSameURL(target.href)) return
+      if (isSameURL(href)) {
+        if (isHash(href)) {
+          instance.push(href)
+          ev.emit('afterRender', href)
+        }
+
+        return
+      }
 
       /**
        * Only save on clicks, not on popstate
@@ -147,13 +155,13 @@ export default function operator ({
      * link or otherwise.
      */
     const path = e.target.window ? (
-      e.target.window.location.pathname
+      e.target.window.location.href
     ) : (
       getValidPath(e, e.target)
     )
 
     if (path) {
-      instance.go(e.target.location.pathname, true) // set isPopstate to true
+      instance.go(e.target.location.href, true) // set isPopstate to true
 
       return false
     }

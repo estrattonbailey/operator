@@ -34,12 +34,11 @@ export function isSameOrigin (href) {
 }
 
 export function getValidPath (e, target) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
   if (!target) return
   if (!target.href) return
-  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
   if (target.target === '_blank') return
   if (!isSameOrigin(target.href)) return
-  if (isHash(target.href)) return
   if (target.classList.contains('no-ajax')) return
   return target.href
 }
