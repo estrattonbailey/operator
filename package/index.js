@@ -147,13 +147,13 @@ export default function operator ({
      * link or otherwise.
      */
     const path = e.target.window ? (
-      e.target.window.location.href
+      e.target.window.location.pathname
     ) : (
       getValidPath(e, e.target)
     )
 
     if (path) {
-      instance.go(e.target.location.href, true) // set isPopstate to true
+      instance.go(e.target.location.pathname, true) // set isPopstate to true
 
       return false
     }
