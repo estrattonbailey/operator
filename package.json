@@ -1,0 +1,32 @@
+{
+  "name": "operator.js",
+  "description": "A drop-in \"PJAX\" solution for fluid, smooth transitions between pages.",
+  "version": "4.0.0-beta",
+  "author": "estrattonbailey",
+  "license": "MIT",
+  "homepage": "https://github.com/estrattonbailey/operator.js#readme",
+  "source": "index.js",
+  "module": "dist/operator.js.es.js",
+  "main": "dist/operator.js.js",
+  "umd:main": "dist/operator.js.umd.js",
+  "scripts": {
+    "build": "microbundle build",
+    "watch": "microbundle watch",
+    "publish": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/estrattonbailey/operator.js.git"
+  },
+  "keywords": [
+    "ajax",
+    "routing",
+    "pjax",
+    "ajaxify",
+    "single page application"
+  ],
+  "devDependencies": {
+    "microbundle": "^0.4.3"
+  },
+  "dependencies": {}
+}
