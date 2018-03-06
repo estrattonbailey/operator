@@ -47,7 +47,8 @@ export function executeRoute (pathname, routes, done) {
    * If we have configured routes,
    * check them and fire any handlers
    */
-  for (let route of routes) {
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i]
     const params = route.match(pathname)
     /**
      * params will return be `null` if
@@ -65,7 +66,8 @@ export function executeRoute (pathname, routes, done) {
   }
 
   Promise.all(handlers).then(responses => {
-    for (let response of responses) {
+    for (let i = 0; i < responses.length; i++) {
+      const response = responses[i]
       if (typeof response === 'string') return done(response) // handle redirect
       if (response === false && window.location.pathname !== pathname) {
         return window.location = pathname
