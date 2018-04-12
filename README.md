@@ -16,7 +16,7 @@
 
 ## Install
 ```bash
-npm i operator.js@next --save
+npm i operator --save
 ```
 
 # Usage
