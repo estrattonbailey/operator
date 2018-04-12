@@ -6,12 +6,15 @@
   "license": "MIT",
   "homepage": "https://github.com/estrattonbailey/operator.js#readme",
   "source": "index.js",
-  "module": "dist/operator.js.es.js",
-  "main": "dist/operator.js.js",
-  "umd:main": "dist/operator.js.umd.js",
+  "module": "dist/operator.es.js",
+  "main": "dist/operator.js",
+  "umd:main": "dist/operator.umd.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "microbundle build",
-    "watch": "microbundle watch",
+    "watch": "microbundle watch --compress false",
     "publish": "npm publish"
   },
   "repository": {

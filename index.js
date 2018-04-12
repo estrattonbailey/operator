@@ -1,3 +1,5 @@
+const cache = new Map()
+
 function getParts (url) {
   const parts = url.split('/')
   return parts.slice(parts[0] !== '' ? 0 : 1)
@@ -33,7 +35,7 @@ function getRoute (path, routes) {
 }
 
 export default function app (defs, selector) {
-  root = document.querySelector(selector)
+  let root = document.querySelector(selector)
 
   let queue
   const routes = []
@@ -62,27 +64,50 @@ export default function app (defs, selector) {
     params: initialRoute ? initialRoute.params : {}
   }
 
+  function done (doc, body, route) {
+    state.title = doc.title
+
+    Promise.all(
+      during.reduce((fns, fn) => {
+        fns.push(fn(state))
+        return fns
+      }, [route.handler ? route.handler(state) : true])
+    ).then(() => {
+      requestAnimationFrame(() => {
+        root.innerHTML = body
+        for (let fn of after) fn(state)
+      })
+    })
+  }
+
+  function get (path, route, cb) {
+    fetch(path, { credentials: 'include' })
+      .then(res => res.text())
+      .then(res => {
+        const doc = new window.DOMParser().parseFromString(res, 'text/html')
+        const c = [
+          doc,
+          doc.querySelector(selector).innerHTML
+        ]
+        cache.set(path, c)
+        cb && cb(c[0], c[1], route)
+      })
+  }
+
   function go (path, route) {
     queue = () => {
-      fetch(path, { credentials: 'include' }).then(res => res.text()).then(r => {
-        const html = new window.DOMParser().parseFromString(r, 'text/html')
-        state.title = html.title
-        Promise.all(
-          during.reduce((fns, fn) => {
-            fns.push(fn(state))
-            return fns
-          }, [route.handler ? route.handler(state) : true])
-        ).then(() => {
-          requestAnimationFrame(() => {
-            root.innerHTML = html.querySelector(selector).innerHTML
-            for (let fn of after) fn(state)
-          })
-        })
-      })
+      const cached = cache.get(path)
+
+      cached ? (
+        done(cached[0], cached[1], route)
+      ) : (
+        get(path, route, done)
+      )
     }
 
     state.path = path
     state.params = route.params
+
     for (let fn of before) fn(path)
 
     queue()
@@ -109,7 +134,7 @@ export default function app (defs, selector) {
     const route = getRoute(path, routes)
     if (!route) return
     e.preventDefault()
-    go(path, route)
+    window.location.pathname !== path && go(path, route)
     return false
   })
 
@@ -132,6 +157,12 @@ export default function app (defs, selector) {
       const route = getRoute(path, routes)
       if (!route) return
       go(path, route)
+    },
+    prefetch (href, cb) {
+      const path = clean(href)
+      const route = getRoute(path, routes)
+      if (!route) return
+      return get(path, route, cb)
     },
     before (fn) {
       before.push(fn)
