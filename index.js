@@ -12,7 +12,8 @@ function clean (href) {
 function getRoute (path, routes) {
   const urls = getParts(path)
   const params = {}
-  outer: for (let route of routes) {
+  outer: for (let r = 0; r < routes.length; r++) {
+    let route = routes[r]
     if (urls.length === route.parts.length) {
       inner: for (let i = 0; i < route.parts.length; i++) {
         if (route.parts[i][0] === ':') {
@@ -39,9 +40,10 @@ export default function app (defs, selector) {
 
   let queue
   const routes = []
-  const before = []
   const during = []
-  const after = []
+  const events = {}
+
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 
   while (defs.length) {
     const r = defs.shift()
@@ -64,23 +66,31 @@ export default function app (defs, selector) {
     params: initialRoute ? initialRoute.params : {}
   }
 
-  function done (doc, body, route) {
+  function emit(ev) {
+    return events[ev] ? events[ev].map(fn => fn(state)) : []
+  }
+
+  function done (doc, body, route, pop) {
     state.title = doc.title
 
     Promise.all(
       during.reduce((fns, fn) => {
-        fns.push(fn(state))
+        fns.unshift(fn(state))
         return fns
       }, [route.handler ? route.handler(state) : true])
-    ).then(() => {
+    ).then(([ cb ]) => {
+      window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
-        for (let fn of after) fn(state)
+        cb && cb()
+        if (!pop) emit('after')
       })
     })
   }
 
-  function get (path, route, cb) {
+  function get (path, route, cb, pop) {
+    if (!route) return window.location.href = path
+
     fetch(path, { credentials: 'include' })
       .then(res => res.text())
       .then(res => {
@@ -94,23 +104,27 @@ export default function app (defs, selector) {
       })
   }
 
-  function go (path, route) {
+  function go (path, route, pop) {
     queue = () => {
       const cached = cache.get(path)
 
       cached ? (
-        done(cached[0], cached[1], route)
+        done(cached[0], cached[1], route, pop)
       ) : (
-        get(path, route, done)
+        get(path, route, done, pop)
       )
     }
 
     state.path = path
-    state.params = route.params
+    state.params = route ? route.params : {}
 
-    for (let fn of before) fn(path)
+    Promise.all(emit('before')).then(queue)
+  }
 
-    queue()
+  function match (href) {
+    const path = clean(href)
+    const route = getRoute(path, routes)
+    return [ path, route ]
   }
 
   document.body.addEventListener('click', e => {
@@ -130,20 +144,16 @@ export default function app (defs, selector) {
       /mailto|tel/.test(a.href)
     ) return
 
-    const path = clean(a.href)
-    const route = getRoute(path, routes)
-    if (!route) return
     e.preventDefault()
-    window.location.pathname !== path && go(path, route)
+
+    const m = match(a.href)
+    window.location.pathname !== m[0] && go(...m, false)
+
     return false
   })
 
   window.addEventListener('popstate', e => {
-    const path = clean(e.target.location.href)
-    const route = getRoute(path, routes)
-    if (!route) return
-    e.preventDefault()
-    go(path, route)
+    go(...match(e.target.location.href), true)
     return false
   })
 
@@ -151,26 +161,16 @@ export default function app (defs, selector) {
     get state () {
       return state
     },
-    push (href) {
+    go (href) {
       queue = null
-      const path = clean(href)
-      const route = getRoute(path, routes)
-      if (!route) return
-      go(path, route)
+      go(...match(href), false)
     },
-    prefetch (href, cb) {
-      const path = clean(href)
-      const route = getRoute(path, routes)
-      if (!route) return
-      return get(path, route, cb)
+    load (href, cb) {
+      return get(...match(href), cb, false)
     },
-    before (fn) {
-      before.push(fn)
-      return () => before.slice(before.indexOf(fn), 1)
-    },
-    after (fn) {
-      after.push(fn)
-      return () => after.slice(after.indexOf(fn), 1)
+    on (ev, fn) {
+      events[ev] = events[ev] ? events[ev].concat(fn) : [ fn ]
+      return () => events[ev].slice(events[ev].indexOf(fn), 1)
     }
   }
 }
