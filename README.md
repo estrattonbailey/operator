@@ -1,5 +1,5 @@
 # operator - *beta*
-1kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
+1.6kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
 
 > Coming from `operator.js`? We got a new name! This library also underwent a
 > major refactor, so there may be some lingering issues. Check out the v3 branch
