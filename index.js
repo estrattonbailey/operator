@@ -1,70 +1,68 @@
-const cache = new Map()
+import * as m from 'matchit'
 
-function getParts (url) {
-  const parts = url.split('/')
-  return parts.slice(parts[0] !== '' ? 0 : 1)
-}
+const cache = new Map()
 
 function clean (href) {
   return href.replace(window.location.origin, '')
 }
 
-function getRoute (path, routes) {
-  const urls = getParts(path)
-  const params = {}
-  outer: for (let r = 0; r < routes.length; r++) {
-    let route = routes[r]
-    if (urls.length === route.parts.length) {
-      inner: for (let i = 0; i < route.parts.length; i++) {
-        if (route.parts[i][0] === ':') {
-          params[route.parts[i].slice(1)] = urls[i]
-          continue inner
-        } else if (route.parts[i] === urls[i]) {
-          continue inner
-        } else if (route.parts[i] === '*') {
-          break
-        }
-        continue outer
-      }
-      route.params = params
-      return route
-    } else if (route.parts[0] == '*') {
-      route.params = params
-      return route
-    }
+function parse (location, routes) {
+  let hash = ''
+  let search = ''
+  let [ pathname, ...parts ] = location.split(/#|\?/)
+
+  pathname = pathname.replace(/\/$/g, '')
+  pathname = pathname || '/'
+
+  for (let i = 0; i < parts.length; i++) {
+    const [ rest ] = location.split(parts[i])
+    if (rest[rest.length - 1] === '?') search = parts[i]
+    if (rest[rest.length - 1] === '#') hash = parts[i]
   }
+
+  const match = m.match(pathname, routes.map(r => r[1]))
+
+  return match[0] ? {
+    handler: routes.filter(r => r[0] === match[0].old)[0][2],
+    params: m.exec(pathname, match),
+    hash,
+    search,
+    pathname,
+    location
+  } : null
 }
 
-export default function app (defs, selector) {
+export default function app (selector, routes = ['*']) {
   let root = document.querySelector(selector)
 
   let queue
-  const routes = []
-  const during = []
+  const middleware = []
   const events = {}
+
+  routes = routes.reduce((next, r) => {
+    if (typeof r === 'function') {
+      middleware.push(r)
+      return next
+    }
+    next.push([].concat(r))
+    return next
+  }, []).map(r => r.pop ? [
+    r[0],
+    m.parse(r[0]),
+    r[1]
+  ] : [
+    r,
+    m.parse(r),
+    null
+  ])
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 
-  while (defs.length) {
-    const r = defs.shift()
-    if (typeof r === 'function') {
-      during.push(r)
-      continue
-    }
-    routes.push({
-      path: r.pop ? r[0] : r,
-      parts: getParts(r.pop ? r[0] : r),
-      handler: r.pop ? r[1] || null : null
-    })
-  }
+  const initialRoute = parse(clean(window.location.href), routes)
 
-  const initialRoute = getRoute(clean(window.location.href), routes)
-
-  const state = {
-    path: clean(window.location.href),
-    title: document.title,
-    params: initialRoute ? initialRoute.params : {}
-  }
+  let state = Object.assign({
+    title: document.title
+  }, initialRoute)
 
   function emit(ev) {
     return events[ev] ? events[ev].map(fn => fn(state)) : []
@@ -74,15 +72,11 @@ export default function app (defs, selector) {
     state.title = doc.title
 
     Promise.all(
-      during.reduce((fns, fn) => {
-        fns.unshift(fn(state))
-        return fns
-      }, [route.handler ? route.handler(state) : true])
-    ).then(([ cb ]) => {
+      middleware.concat(route.handler || []).map(fn => fn(state))
+    ).then(() => {
       window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
-        cb && cb()
         if (!pop) emit('after')
       })
     })
@@ -115,15 +109,14 @@ export default function app (defs, selector) {
       )
     }
 
-    state.path = path
-    state.params = route ? route.params : {}
+    state = Object.assign(state, route)
 
     Promise.all(emit('before')).then(queue)
   }
 
   function match (href) {
     const path = clean(href)
-    const route = getRoute(path, routes)
+    const route = parse(path, routes)
     return [ path, route ]
   }
 
@@ -146,8 +139,8 @@ export default function app (defs, selector) {
 
     e.preventDefault()
 
-    const m = match(a.href)
-    window.location.pathname !== m[0] && go(...m, false)
+    const m = match(a.pathname)
+    state.location !== m[0] && go(...m, false)
 
     return false
   })

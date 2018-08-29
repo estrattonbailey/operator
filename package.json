@@ -31,5 +31,7 @@
   "devDependencies": {
     "microbundle": "^0.4.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "matchit": "^1.0.6"
+  }
 }
