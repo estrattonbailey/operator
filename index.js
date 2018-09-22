@@ -77,12 +77,12 @@ export default function app (selector, routes = ['*']) {
       window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
-        if (!pop) emit('after')
+        emit('after')
       })
     })
   }
 
-  function get (path, route, cb, pop) {
+  function get (path, route, cb) {
     if (!route) return window.location.href = path
 
     fetch(path, { credentials: 'include' })
@@ -105,7 +105,7 @@ export default function app (selector, routes = ['*']) {
       cached ? (
         done(cached[0], cached[1], route, pop)
       ) : (
-        get(path, route, done, pop)
+        get(path, route, done)
       )
     }
 
@@ -159,7 +159,7 @@ export default function app (selector, routes = ['*']) {
       go(...match(href), false)
     },
     load (href, cb) {
-      return get(...match(href), cb, false)
+      return get(...match(href), cb)
     },
     on (ev, fn) {
       events[ev] = events[ev] ? events[ev].concat(fn) : [ fn ]
