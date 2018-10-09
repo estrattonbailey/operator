@@ -39,7 +39,7 @@ export default function app (selector, routes = ['*']) {
   const middleware = []
   const events = {}
 
-  routes = routes.reduce((next, r) => {
+  routes = routes.concat(routes.indexOf('*') < 0 ? '*' : []).reduce((next, r) => {
     if (typeof r === 'function') {
       middleware.push(r)
       return next

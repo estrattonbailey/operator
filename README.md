@@ -22,18 +22,8 @@ operator('#root')
 ```
 
 ## Defining routes
-By default, the previous example is the same as:
-```javascript
-operator('#root', [
-  '*'
-])
-```
-Where every route matches the wildcard, and so every page transition is followed via
-AJAX.
-
-To define custom handlers for a given route, define that route in addition to
-the wildcard. **The wildcard should always be last, since routes are matched in
-order.**
+To define custom handlers for a given route, pass an object with a `path`
+property and `handler` method.
 ```javascript
 operator('#root', [
   {
@@ -41,8 +31,7 @@ operator('#root', [
     handler (state) {
       console.log(state)
     }
-  },
-  '*'
+  }
 ])
 ```
 
@@ -69,8 +58,7 @@ operator('#root', [
       if (params.slug) reqs.push(getProductBySlug(params.slug))
       return Promise.all(reqs)
     }
-  },
-  '*'
+  }
 ])
 ```
 
@@ -83,8 +71,7 @@ operator('#root', [
   {
     'path': '/',
     cache: false
-  },
-  '*'
+  }
 ])
 ```
 
@@ -96,8 +83,7 @@ operator('#root', [
   {
     'path': '/',
     ignore: true
-  },
-  '*'
+  }
 ])
 ```
 
@@ -106,8 +92,7 @@ Any function passed to the route config will be called on every route change,
 kind of like *middleware*.
 ```javascript
 const app = operator('#root', [
-  state => console.log(state),
-  '*'
+  state => console.log(state)
 ])
 ```
 
@@ -124,15 +109,6 @@ user. Most people should probably just use this snippet:
 app.on('after', ({ title, pathname }) => {
   document.title = title
   window.history.pushState({}, '', pathname)
-})
-```
-
-### Redirects
-```javascript
-app.on('before', ({ pathname }) => {
-  if (/redirect/.test(pathname)) {
-    app.push('/') // redirect
-  }
 })
 ```
 
@@ -155,6 +131,15 @@ app.state // => { title, pathname, location, params, hash, search, handler }
 
 ## Recipes
 
+### Redirects
+```javascript
+app.on('before', ({ pathname }) => {
+  if (/redirect/.test(pathname)) {
+    app.push('/') // redirect
+  }
+})
+```
+
 ### Transition animation
 ```javascript
 import wait from 'w2t'
@@ -171,8 +156,7 @@ operator('#root', [
         }, 600)
       })
     ])
-  },
-  '*'
+  }
 ])
 ```
 
