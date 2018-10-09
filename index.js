@@ -20,10 +20,13 @@ function parse (location, routes) {
     if (rest[rest.length - 1] === '#') hash = parts[i]
   }
 
-  const match = m.match(pathname, routes.map(r => r[1]))
+  const match = m.match(pathname, routes.map(r => r.matcher))
+
+  const { handler, cache } = routes.filter(r => r.path === match[0].old)[0]
 
   return match[0] ? {
-    handler: routes.filter(r => r[0] === match[0].old)[0][2],
+    cache,
+    handler,
     params: m.exec(pathname, match),
     hash,
     search,
@@ -44,17 +47,15 @@ export default function app (selector, routes = ['*']) {
       middleware.push(r)
       return next
     }
-    next.push([].concat(r))
-    return next
-  }, []).map(r => r.pop ? [
-    r[0],
-    m.parse(r[0]),
-    r[1]
-  ] : [
-    r,
-    m.parse(r),
-    null
-  ])
+    return next.concat(r)
+  }, []).map(r => {
+    return r.path ? Object.assign({}, r, {
+      matcher: m.parse(r.path)
+    }) : {
+      path: r,
+      matcher: m.parse(r)
+    }
+  })
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 
@@ -102,7 +103,7 @@ export default function app (selector, routes = ['*']) {
     queue = () => {
       const cached = cache.get(path)
 
-      cached ? (
+      cached && route.cache !== false ? (
         done(cached[0], cached[1], route, pop)
       ) : (
         get(path, route, done)
