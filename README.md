@@ -1,10 +1,5 @@
-# operator - *beta*
+# operator
 1.6kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
-
-> Coming from `operator.js`? We got a new name! This library also underwent a
-> major refactor, so there may be some lingering issues. Check out the v3 branch
-> and install from the legacy `operator.js` package for the latest stable
-> release.
 
 ## Features
 1. Advanced routing via [matchit](https://github.com/lukeed/matchit)
@@ -41,9 +36,12 @@ the wildcard. **The wildcard should always be last, since routes are matched in
 order.**
 ```javascript
 operator('#root', [
-  ['/', state => {
-    console.log(state)
-  }],
+  {
+    path: '/',
+    handler (state) {
+      console.log(state)
+    }
+  },
   '*'
 ])
 ```
@@ -52,17 +50,53 @@ Routes handlers can also return `Promise`s, and they support params, optional
 params, and wildcards.
 ```javascript
 operator('#root', [
-  ['/', state => {
-    console.log(state)
-  }],
-  ['/products', state => {
-    return getProducts() // Promise
-  }],
-  ['/products/:category/:slug?', ({ params }) => {
-    const reqs = [ getProductCategory(params.category) ]
-    if (params.slug) reqs.push(getProductBySlug(params.slug))
-    return Promise.all(reqs)
-  }]
+  {
+    path: '/',
+    handler (state) {
+      console.log(state)
+    }
+  },
+  {
+    path: '/products',
+    handler (state) {
+      return getProducts() // Promise
+    }
+  },
+  {
+    path: '/products/:category/:slug?',
+    handler ({ params }) {
+      const reqs = [ getProductCategory(params.category) ]
+      if (params.slug) reqs.push(getProductBySlug(params.slug))
+      return Promise.all(reqs)
+    }
+  },
+  '*'
+])
+```
+
+### Route Caching
+Routes are cached by default, so on subsequent visits, no data will be loaded.
+To follow links to pages via AJAX, but fetch fresh content on each navigation
+action, set `cache` to `false`:
+```javascript
+operator('#root', [
+  {
+    'path': '/',
+    cache: false
+  },
+  '*'
+])
+```
+
+### Ignoring Routes
+Sometimes you need to navigate to a page without AJAX, perhaps to load some sort
+of `iframe` content. To do so, set `ignore` to `true`:
+```javascript
+operator('#root', [
+  {
+    'path': '/',
+    ignore: true
+  },
   '*'
 ])
 ```
