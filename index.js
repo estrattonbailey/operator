@@ -21,18 +21,15 @@ function parse (location, routes) {
   }
 
   const match = m.match(pathname, routes.map(r => r.matcher))
+  const route = routes.filter(r => r.path === match[0].old)[0]
 
-  const { handler, cache } = routes.filter(r => r.path === match[0].old)[0]
-
-  return match[0] ? {
-    cache,
-    handler,
+  return match[0] ? Object.assign({}, route, {
     params: m.exec(pathname, match),
     hash,
     search,
     pathname,
     location
-  } : null
+  }) : null
 }
 
 export default function app (selector, routes = ['*']) {
@@ -112,6 +109,7 @@ export default function app (selector, routes = ['*']) {
 
     state = Object.assign(state, route)
 
+    // allows for redirects
     Promise.all(emit('before')).then(queue)
   }
 
@@ -138,10 +136,13 @@ export default function app (selector, routes = ['*']) {
       /mailto|tel/.test(a.href)
     ) return
 
+    const [ path, route ] = match(a.pathname)
+
+    if (route.ignore) return e
+
     e.preventDefault()
 
-    const m = match(a.pathname)
-    state.location !== m[0] && go(...m, false)
+    state.location !== path && go(path, route, false)
 
     return false
   })
