@@ -112,7 +112,7 @@ app.on('after', ({ title, pathname }) => {
 })
 ```
 
-## API
+# API
 ### go(path)
 ```javascript
 app.go('/about')
@@ -129,8 +129,7 @@ app.load('/about')
 app.state // => { title, pathname, location, params, hash, search, handler }
 ```
 
-## Recipes
-
+# Recipes
 ### Redirects
 ```javascript
 app.on('before', ({ pathname }) => {
@@ -159,6 +158,14 @@ operator('#root', [
   }
 ])
 ```
+
+# Changelog
+### v1.2.0
+Slight update to the API, will require brief migration to new syntax for most
+users.
+- deprecated Array format for route configs in favor of more flexible Object
+  syntax
+- add `ignore` and `cache` options
 
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)
