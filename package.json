@@ -29,7 +29,7 @@
     "single page application"
   ],
   "devDependencies": {
-    "microbundle": "^0.4.3"
+    "microbundle": "^0.7.0"
   },
   "dependencies": {
     "matchit": "^1.0.6"
