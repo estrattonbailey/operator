@@ -149,6 +149,7 @@ export default function app (selector, routes = ['*']) {
   })
 
   window.addEventListener('popstate', e => {
+    if (e.target.location.pathname === state.location) return // prevent popstate on hashchange
     go(...match(e.target.location.href), true)
     return false
   })
