@@ -1,7 +1,7 @@
 {
   "name": "operator",
   "description": "A drop-in \"PJAX\" solution for fluid, smooth transitions between pages.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "estrattonbailey",
   "license": "MIT",
   "homepage": "https://github.com/estrattonbailey/operator#readme",
