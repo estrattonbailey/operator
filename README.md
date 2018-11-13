@@ -1,5 +1,5 @@
 # operator
-1.6kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
+1.2kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
 
 ## Features
 1. Advanced routing via [matchit](https://github.com/lukeed/matchit)
@@ -96,10 +96,11 @@ const app = operator('#root', [
 ])
 ```
 
-Operator also emits some helpful events before and after a route change.
+Operator also emits some helpful events.
 ```javascript
-app.on('before', state => {})
-app.on('after', state => {})
+app.on('navigate', state => {}) // on valid link click
+app.on('before', state => {}) // before render
+app.on('after', state => {}) // after render
 ```
 
 ### History state

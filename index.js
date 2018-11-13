@@ -145,6 +145,8 @@ export default function app (selector, routes = ['*']) {
 
     state.location !== path && go(path, route, false)
 
+    emit('navigate', state)
+
     return false
   })
 
