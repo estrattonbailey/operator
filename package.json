@@ -32,6 +32,6 @@
     "microbundle": "^0.7.0"
   },
   "dependencies": {
-    "matchit": "^1.0.6"
+    "matchit": "^1.0.7"
   }
 }
