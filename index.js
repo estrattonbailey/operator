@@ -1,4 +1,4 @@
-import * as m from 'matchit'
+const m = require('matchit')
 
 const cache = new Map()
 
