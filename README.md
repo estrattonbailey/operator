@@ -1,5 +1,5 @@
 # operator
-1.2kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
+1.8kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
 
 ## Features
 1. Advanced routing via [matchit](https://github.com/lukeed/matchit)

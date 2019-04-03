@@ -13,8 +13,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "microbundle build",
-    "watch": "microbundle watch --compress false",
+    "build": "microbundle build --external none",
+    "watch": "microbundle watch --external none --compress false",
     "publish": "npm publish"
   },
   "repository": {
@@ -29,7 +29,7 @@
     "single page application"
   ],
   "devDependencies": {
-    "microbundle": "^0.7.0"
+    "microbundle": "^0.11.0"
   },
   "dependencies": {
     "matchit": "^1.0.7"
