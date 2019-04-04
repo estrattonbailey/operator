@@ -1,3 +1,4 @@
 dist/
+demo
 demo/public/*.hot-update.js
 demo/public/*.hot-update.json
