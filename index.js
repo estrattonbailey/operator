@@ -137,7 +137,7 @@ export default function app (selector, routes = ['*']) {
       a.classList.contains('no-ajax')
     ) return
 
-    const [ path, route ] = match(a.pathname)
+    const [ path, route ] = match(a.href)
 
     if (route.ignore) return e
 
