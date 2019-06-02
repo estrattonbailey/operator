@@ -101,15 +101,47 @@ Operator also emits some helpful events.
 app.on('navigate', state => {}) // on valid link click
 app.on('before', state => {}) // before render
 app.on('after', state => {}) // after render
+app.on('hash', state => {}) // when the URL contains a hash
 ```
 
 ### History state
 Operator does not manage `History` or page title, for maximum flexibility to the
 user. Most people should probably just use this snippet:
 ```javascript
+app.on('after', ({ title, location }) => {
+  document.title = title
+  window.history.pushState({}, '', location)
+})
+```
+
+If you want to ignore things like query strings or hashes, use `pathname`:
+```javascript
 app.on('after', ({ title, pathname }) => {
   document.title = title
   window.history.pushState({}, '', pathname)
+})
+```
+
+### Hash Anchors
+When a hash is encountered – whether on a `navigate` action between pages, or
+for scroll-anchors on the same page - Operator will emit a `hash` event. *It's
+  up to you to handle scrolling.*
+
+For most sites, this should work:
+```javascript
+app.on('hash', ({ hash }) => {
+  const scroll = document.getElementById(hash).getBoundingClientRect().top + window.pageYOffset
+
+  window.scrollTo(0, scroll)
+})
+```
+
+Smooth scrolling is also pretty easy:
+```javascript
+import sscroll from 'sscroll'
+
+app.on('hash', ({ hash }) => {
+  sscroll(document.getElementById(hash), { duration: 500 })
 })
 ```
 
@@ -161,6 +193,9 @@ operator('#root', [
 ```
 
 # Changelog
+### v1.5.0
+Implemented `hash` event, see [docs](#hash-anchors).
+
 ### v1.2.0
 Slight update to the API, will require brief migration to new syntax for most
 users.
