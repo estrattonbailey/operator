@@ -135,12 +135,12 @@ export default function app (selector, routes = ['*']) {
     if (route.ignore) return e
 
     if (
-      window.location.origin !== a.origin || // external link
-      (state.pathname === route.pathname && route.hash) || // hash on same page
-      a.hasAttribute('download') ||
-      a.target === '_blank' ||
-      /mailto|tel/.test(a.href) ||
-      a.classList.contains('no-ajax')
+      window.location.origin !== a.origin // external link
+      || (state.pathname === route.pathname && route.hash) // hash on same page
+      || a.hasAttribute('download')
+      || a.target === '_blank'
+      || /mailto|tel/.test(a.href)
+      || a.classList.contains('no-ajax')
     ) return e
 
     e.preventDefault()
