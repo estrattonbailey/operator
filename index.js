@@ -75,6 +75,7 @@ export default function app (selector, routes = ['*']) {
       window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
+        route.hash && emit('hash')
         emit('after')
       })
     })
@@ -107,15 +108,14 @@ export default function app (selector, routes = ['*']) {
       )
     }
 
-    state = Object.assign(state, route)
-
     // allows for redirects
     Promise.all(emit('before')).then(queue)
   }
 
-  function match (url) {
+  function match (url, update) {
     const href = clean(url)
     const route = parse(href, routes)
+    update !== false && Object.assign(state, route)
     return [ href, route ]
   }
 
@@ -134,9 +134,14 @@ export default function app (selector, routes = ['*']) {
 
     if (route.ignore) return e
 
+    if (state.pathname === route.pathname && route.hash) {
+      e.preventDefault()
+      emit('hash')
+      return e
+    }
+
     if (
       window.location.origin !== a.origin // external link
-      || (state.pathname === route.pathname && route.hash) // hash on same page
       || a.hasAttribute('download')
       || a.target === '_blank'
       || /^(?:mailto|tel):/.test(a.href)
@@ -162,12 +167,12 @@ export default function app (selector, routes = ['*']) {
     get state () {
       return state
     },
-    go (href) {
+    go (url) {
       queue = null
-      go(...match(href), false)
+      go(...match(url), false)
     },
     load (href, cb) {
-      return get(...match(href), cb)
+      return get(...match(href, false), cb)
     },
     on (ev, fn) {
       events[ev] = events[ev] ? events[ev].concat(fn) : [ fn ]
