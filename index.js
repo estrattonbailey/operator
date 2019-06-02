@@ -80,10 +80,10 @@ export default function app (selector, routes = ['*']) {
     })
   }
 
-  function get (path, route, cb) {
-    if (!route) return window.location.href = path
+  function get (href, route, cb) {
+    if (!route) return window.location.href = href
 
-    fetch(path, { credentials: 'include' })
+    fetch(href, { credentials: 'include' })
       .then(res => res.text())
       .then(res => {
         const doc = new window.DOMParser().parseFromString(res, 'text/html')
@@ -91,19 +91,19 @@ export default function app (selector, routes = ['*']) {
           doc,
           doc.querySelector(selector).innerHTML
         ]
-        cache.set(path, c)
+        cache.set(href, c)
         cb && cb(c[0], c[1], route)
       })
   }
 
-  function go (path, route, pop) {
+  function go (href, route, pop) {
     queue = () => {
-      const cached = cache.get(path)
+      const cached = cache.get(href)
 
       cached && route.cache !== false ? (
         done(cached[0], cached[1], route, pop)
       ) : (
-        get(path, route, done)
+        get(href, route, done)
       )
     }
 
@@ -113,10 +113,10 @@ export default function app (selector, routes = ['*']) {
     Promise.all(emit('before')).then(queue)
   }
 
-  function match (href) {
-    const path = clean(href)
-    const route = parse(path, routes)
-    return [ path, route ]
+  function match (url) {
+    const href = clean(url)
+    const route = parse(href, routes)
+    return [ href, route ]
   }
 
   document.body.addEventListener('click', e => {
@@ -128,22 +128,24 @@ export default function app (selector, routes = ['*']) {
       a = a.parentNode
     }
 
+    if (!a) return e
+
+    const [ href, route ] = match(a.href)
+
+    if (route.ignore) return e
+
     if (
-      !a ||
-      window.location.origin !== a.origin ||
+      window.location.origin !== a.origin || // external link
+      (state.pathname === route.pathname && route.hash) || // hash on same page
       a.hasAttribute('download') ||
       a.target === '_blank' ||
       /^(?:mailto|tel):/.test(a.href) ||
       a.classList.contains('no-ajax')
-    ) return
-
-    const [ path, route ] = match(a.href)
-
-    if (route.ignore) return e
+    ) return e
 
     e.preventDefault()
 
-    state.location !== path && go(path, route, false)
+    state.location !== href && go(href, route, false)
 
     emit('navigate', state)
 
@@ -151,7 +153,7 @@ export default function app (selector, routes = ['*']) {
   })
 
   window.addEventListener('popstate', e => {
-    if (e.target.location.pathname === state.location) return // prevent popstate on hashchange
+    if (e.target.location.pathname === state.pathname) return // prevent popstate on hashchange
     go(...match(e.target.location.href), true)
     return false
   })

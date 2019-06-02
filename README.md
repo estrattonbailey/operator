@@ -135,7 +135,7 @@ app.state // => { title, pathname, location, params, hash, search, handler }
 ```javascript
 app.on('before', ({ pathname }) => {
   if (/redirect/.test(pathname)) {
-    app.push('/') // redirect
+    app.go('/') // redirect
   }
 })
 ```
