@@ -130,9 +130,12 @@ for scroll-anchors on the same page - Operator will emit a `hash` event. *It's
 For most sites, this should work:
 ```javascript
 app.on('hash', ({ hash }) => {
-  const scroll = document.getElementById(hash).getBoundingClientRect().top + window.pageYOffset
+  const target = document.getElementById(hash)
 
-  window.scrollTo(0, scroll)
+  if (target) {
+    const scroll = target.getBoundingClientRect().top + window.pageYOffset
+    window.scrollTo(0, scroll)
+  }
 })
 ```
 
@@ -141,7 +144,8 @@ Smooth scrolling is also pretty easy:
 import sscroll from 'sscroll'
 
 app.on('hash', ({ hash }) => {
-  sscroll(document.getElementById(hash), { duration: 500 })
+  const target = document.getElementById(hash)
+  target && sscroll(target, { duration: 500 })
 })
 ```
 
