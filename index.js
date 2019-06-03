@@ -75,8 +75,9 @@ export default function app (selector, routes = ['*']) {
       window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
-        route.hash && emit('hash')
         emit('after')
+        // after out-transitions
+        route.hash && emit('hash')
       })
     })
   }
@@ -108,14 +109,15 @@ export default function app (selector, routes = ['*']) {
       )
     }
 
+    Object.assign(state, route)
+
     // allows for redirects
     Promise.all(emit('before')).then(queue)
   }
 
-  function match (url, update) {
+  function match (url) {
     const href = clean(url)
     const route = parse(href, routes)
-    update !== false && Object.assign(state, route)
     return [ href, route ]
   }
 
@@ -134,8 +136,14 @@ export default function app (selector, routes = ['*']) {
 
     if (route.ignore) return e
 
+    /**
+     * If a hash points to a location on the current page,
+     * update state with the hash, emit the event, and return,
+     * since we don't need to navigate anywhere.
+     */
     if (state.pathname === route.pathname && route.hash) {
       e.preventDefault()
+      Object.assign(state, route)
       emit('hash')
       return e
     }
