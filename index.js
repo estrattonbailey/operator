@@ -133,7 +133,7 @@ export default function app (selector, routes = ['*']) {
       window.location.origin !== a.origin ||
       a.hasAttribute('download') ||
       a.target === '_blank' ||
-      /mailto|tel/.test(a.href) ||
+      /^(?:mailto|tel):/.test(a.href) ||
       a.classList.contains('no-ajax')
     ) return
 
