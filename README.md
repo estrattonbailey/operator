@@ -197,15 +197,16 @@ operator('#root', [
 ```
 
 # Changelog
-### v1.5.0
-Implemented `hash` event, see [docs](#hash-anchors).
+### v1.6.0
+- Implemented `hash` event, see [docs](#hash-anchors)
+- Fix bad `mailto` and `tel` regex, thanks [@gabrielloeb](https://github.com/gabrielloeb)!
 
 ### v1.2.0
 Slight update to the API, will require brief migration to new syntax for most
 users.
-- deprecated Array format for route configs in favor of more flexible Object
+- Deprecated Array format for route configs in favor of more flexible Object
   syntax
-- add `ignore` and `cache` options
+- Add `ignore` and `cache` options
 
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)
