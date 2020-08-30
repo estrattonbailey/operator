@@ -59,7 +59,7 @@ export default function app (selector, routes = ['*']) {
   const initialRoute = parse(clean(window.location.href), routes)
 
   let state = Object.assign({
-    title: document.title
+    previousDocument: null,
   }, initialRoute)
 
   function emit(ev) {
@@ -67,7 +67,7 @@ export default function app (selector, routes = ['*']) {
   }
 
   function done (doc, body, route, pop) {
-    state.title = doc.title
+    state.previousDocument = doc.cloneNode(true)
 
     Promise.all(
       middleware.concat(route.handler || []).map(fn => fn(state))

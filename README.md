@@ -108,16 +108,16 @@ app.on('hash', state => {}) // when the URL contains a hash
 Operator does not manage `History` or page title, for maximum flexibility to the
 user. Most people should probably just use this snippet:
 ```javascript
-app.on('after', ({ title, location }) => {
-  document.title = title
+app.on('after', ({ previousDocument, location }) => {
+  document.title = previousDocumnt.title
   window.history.pushState({}, '', location)
 })
 ```
 
 If you want to ignore things like query strings or hashes, use `pathname`:
 ```javascript
-app.on('after', ({ title, pathname }) => {
-  document.title = title
+app.on('after', ({ previousDocumnt, pathname }) => {
+  document.title = previousDocumnt.title
   window.history.pushState({}, '', pathname)
 })
 ```
@@ -163,7 +163,7 @@ app.load('/about')
 
 ### state (getter)
 ```javascript
-app.state // => { title, pathname, location, params, hash, search, handler }
+app.state // => { previousDocument, pathname, location, params, hash, search, handler }
 ```
 
 # Recipes
@@ -197,6 +197,10 @@ operator('#root', [
 ```
 
 # Changelog
+### v1.7.0
+Added `previousDocument` (a complete cloned `document` object) to the `state`
+object. Replaces `state.title` via `previousDocument.title`.
+
 ### v1.6.0
 - Implemented `hash` event, see [docs](#hash-anchors)
 - Fix bad `mailto` and `tel` regex, thanks [@gabrielloeb](https://github.com/gabrielloeb)!
