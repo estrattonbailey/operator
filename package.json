@@ -14,8 +14,7 @@
   ],
   "scripts": {
     "build": "microbundle build --external none",
-    "watch": "microbundle watch --external none --compress false",
-    "publish": "npm publish"
+    "watch": "microbundle watch --external none --compress false"
   },
   "repository": {
     "type": "git",
