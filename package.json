@@ -13,8 +13,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "microbundle build --external none",
-    "watch": "microbundle watch --external none --compress false"
+    "build": "microbundle build",
+    "watch": "microbundle watch --compress false"
   },
   "repository": {
     "type": "git",

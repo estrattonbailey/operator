@@ -1,4 +1,5 @@
-# operator
+# operator ![npm](https://img.shields.io/npm/v/operator) [![](https://badgen.net/bundlephobia/minzip/operator)](https://bundlephobia.com/result?p=operator)
+
 1.8kb drop-in "PJAX" solution for fluid, smooth transitions between pages. Zero stress.
 
 ## Features
@@ -197,6 +198,10 @@ operator('#root', [
 ```
 
 # Changelog
+### v1.8.0
+Removed default scroll handling. This should be moved to user-space in the event
+the user doesn't want the page to reset to the top.
+
 ### v1.7.0
 Added `previousDocument` (a complete cloned `document` object) to the `state`
 object. Replaces `state.title` via `previousDocument.title`.

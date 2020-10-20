@@ -54,8 +54,6 @@ export default function app (selector, routes = ['*']) {
     }
   })
 
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
-
   const initialRoute = parse(clean(window.location.href), routes)
 
   let state = Object.assign({
@@ -72,7 +70,6 @@ export default function app (selector, routes = ['*']) {
     Promise.all(
       middleware.concat(route.handler || []).map(fn => fn(state))
     ).then(() => {
-      window.scrollTo(0, 0)
       requestAnimationFrame(() => {
         root.innerHTML = body
         emit('after')
