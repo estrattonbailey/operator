@@ -86,9 +86,13 @@ export default function app (selector, routes = ['*']) {
       .then(res => res.text())
       .then(res => {
         const doc = new window.DOMParser().parseFromString(res, 'text/html')
+
+        const newRoot = doc.querySelector(selector)
+        if (! newRoot) return window.location.href = href
+
         const c = [
           doc,
-          doc.querySelector(selector).innerHTML
+          newRoot.innerHTML
         ]
         cache.set(href, c)
         cb && cb(c[0], c[1], route)
