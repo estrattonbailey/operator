@@ -110,15 +110,15 @@ Operator does not manage `History` or page title, for maximum flexibility to the
 user. Most people should probably just use this snippet:
 ```javascript
 app.on('after', ({ previousDocument, location }) => {
-  document.title = previousDocumnt.title
+  document.title = previousDocument.title
   window.history.pushState({}, '', location)
 })
 ```
 
 If you want to ignore things like query strings or hashes, use `pathname`:
 ```javascript
-app.on('after', ({ previousDocumnt, pathname }) => {
-  document.title = previousDocumnt.title
+app.on('after', ({ previousDocument, pathname }) => {
+  document.title = previousDocument.title
   window.history.pushState({}, '', pathname)
 })
 ```
